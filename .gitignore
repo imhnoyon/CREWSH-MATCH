@@ -1,0 +1,72 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django migration files (optional, if you don't want to track them until stable)
+# Uncomment the next line if you want to ignore them
+# */migrations/*.py
+# */migrations/*.pyc
+
+# SQLite database (ignore if using PostgreSQL/MySQL instead)
+*.sqlite3
+
+# Environment variables
+.env
+.env.*
+
+# VSCode settings
+.vscode/
+
+# PyCharm settings
+.idea/
+
+# macOS files
+.DS_Store
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.pipenv/
+*.egg-info/
+
+# Node.js (if using with frontend)
+node_modules/
+
+# Logs
+*.log
+
+# Static files (if collected using collectstatic)
+staticfiles/
+static/
+
+# Media files (user uploads)
+media/
+
+# Coverage reports
+htmlcov/
+.coverage
+
+# Testing
+.pytest_cache/
+.tox/
+.noseids
+
+# Compiled files
+*.so
+
+# MyPy and type checker cache
+.mypy_cache/
+.dmypy.json
+
+# Jupyter Notebook checkpoints (if used)
+.ipynb_checkpoints/
+
+# Docker files (optional)
+*.pid
+*.pid.lock
+
+# local
+stripe-cli/

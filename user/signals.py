@@ -1,0 +1,30 @@
+from django.conf import settings
+from django.dispatch import receiver
+from django.core.mail import send_mail
+from django.db.models.signals import post_save
+from django.contrib.auth import get_user_model
+
+from .utils import generate_otp
+
+from .models import Otp, Profile
+
+User = get_user_model()
+
+
+@receiver(post_save, sender=User)
+def send_otp(instance, created, *args, **kwargs):
+    if created:
+        otp, _ =Otp.objects.update_or_create(
+            user=instance,
+            defaults={
+                'code': generate_otp(),
+            }
+        )
+        Profile.objects.create(user=instance)
+        send_mail(
+            subject="Account Verification",
+            message=otp.code,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[instance.email],
+            fail_silently=True
+        )
