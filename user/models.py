@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
-from core.models import Timestamp
+from core.models import Timestamp, Company, Ship
+
 from .managers import  UserManager
 
 
@@ -42,8 +43,8 @@ class Profile(Timestamp):
     bio = models.TextField(null=True)
     dob = models.DateField(null=True)
     gender = models.CharField(choices=list(GENDER), max_length=6, null=True)
-    company = models.CharField(max_length=150, null=True)
-    ship = models.CharField(max_length=150, null=True)
+    company = models.ForeignKey(Company, null=True, on_delete=models.SET_NULL)
+    ship = models.ForeignKey(Ship, null=True, on_delete=models.SET_NULL)
     country = models.CharField(null=True)
     gender_preference = models.CharField(choices=list(GENDER_CHOICES), max_length=6, null=True)
     age_from = models.IntegerField(null=True)

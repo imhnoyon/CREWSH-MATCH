@@ -19,14 +19,13 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
-    profile = serializers.SerializerMethodField(method_name="get_profile")
 
     class Meta:
         model = User
         fields = (
             "id", "name", "email", "password", "password2", "photo",
             "is_active", "is_subscribed", "is_private", "is_banned",
-            "created_at", "profile",
+            "created_at",
         )
 
     def validate_password2(self, value):

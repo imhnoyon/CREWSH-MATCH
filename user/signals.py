@@ -14,17 +14,18 @@ User = get_user_model()
 @receiver(post_save, sender=User)
 def send_otp(instance, created, *args, **kwargs):
     if created:
-        otp, _ =Otp.objects.update_or_create(
-            user=instance,
-            defaults={
-                'code': generate_otp(),
-            }
-        )
         Profile.objects.create(user=instance)
-        send_mail(
-            subject="Account Verification",
-            message=otp.code,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[instance.email],
-            fail_silently=True
-        )
+        if not instance.is_superuser:
+            otp, _ = Otp.objects.update_or_create(
+                user=instance,
+                defaults={
+                    'code': generate_otp(),
+                }
+            )
+            send_mail(
+                subject="Account Verification",
+                message=otp.code,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[instance.email],
+                fail_silently=True
+            )
