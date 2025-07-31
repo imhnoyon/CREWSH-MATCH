@@ -21,6 +21,7 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -32,6 +33,8 @@ INSTALLED_APPS = [
     'django_filters',
     'core',
     'user',
+    'chat',
+    'content',
 ]
 
 MIDDLEWARE = [
@@ -50,7 +53,7 @@ ROOT_URLCONF = 'crewmatch.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -63,6 +66,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'crewmatch.wsgi.application'
+ASGI_APPLICATION = "crewmatch.asgi.application"
 
 
 # Database

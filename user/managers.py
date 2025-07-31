@@ -23,7 +23,5 @@ class UserManager(BaseUserManager):
             is_staff=True, is_active=True, is_superuser=True,
             **extra_fields
         )
-        user.is_superuser = True
-        user.is_active = True
-        user.is_staff = True
-        user.save()
+        return user
+

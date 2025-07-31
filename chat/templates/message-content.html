@@ -1,0 +1,20 @@
+<li class="list-group-item list-group-flush mb-2 {% if message.sender.pk == request.user.pk %}text-end{% else %}text-start{% endif %}">
+    <div class="{% if message.sender.pk == request.user.pk %}text-end{% else %}text-start{% endif %}" >
+        {% if message.message_type == 'Text' %}
+        <span>{{message}}</span>
+        
+        {% elif message.message_type == 'Photo' %}
+            <img src="{{ message.content_object.photo.url }}" alt="Photo" class="img-fluid rounded" style="max-width: 300px;" />
+        
+        {% elif message.message_type == 'File' %}
+            {% if message.extension == 'txt' %}
+            <a href="{{message.content_object.file.url}}" class="text-decoration-none" target="_blank"><i class="fa-solid fa-file-lines"></i></a>
+            {% elif message.extension == 'pdf' %}
+                <a href="{{message.content_object.file.url}}" class="text-decoration-none" target="_blank"><i class="fa-solid fa-file-pdf"></i></a>
+            {% endif %}
+        {% endif %}
+        <div class="text-muted small mt-1 {% if message.sender.pk == request.user.pk %}text-end{% else %}text-start{% endif %}">
+            {{ message.sent_at }}
+        </div>
+    </div>
+</li>

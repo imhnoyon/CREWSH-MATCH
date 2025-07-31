@@ -14,7 +14,6 @@ User = get_user_model()
 @receiver(post_save, sender=User)
 def send_otp(instance, created, *args, **kwargs):
     if created:
-        Profile.objects.create(user=instance)
         if not instance.is_superuser:
             otp, _ = Otp.objects.update_or_create(
                 user=instance,

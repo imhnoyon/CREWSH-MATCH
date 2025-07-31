@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% load time_filters %}
+{% block title %}Chat{% endblock title %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12 col-lg-12 mb-3">
+        <h3 class="mb-3">{{chating_to.name}}</h3>
+        <hr class="">
+        <ul class="list-group list-group-flush" id="messages">
+            {% for message in messages %}
+            {% include 'message-content.html' with message=message %}
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="col-md-12 col-lg-12 mb-3">
+        <form id="sendTextForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="input-group d-flex" >
+                <!-- Text input -->
+                <input id="text" class="form-control" type="text" placeholder="Send a message">
+                <!-- Photo input single + multipe -->
+                <label class="input-group-text pe-5" for="photoInput">
+                    <i class="fa-solid fa-image"></i>
+                </label>
+                <input id="photoInput" multiple accept="image/*" type="file" name="file" style="height: 0; width: 0; overflow: none;">
+                <!-- File input -->
+                <label class="input-group-text pe-5" for="fileInput">
+                    <i class="fa-solid fa-paperclip"></i>
+                </label>
+                <input id="fileInput" accept=".doc, .docx, .pdf, .txt" type="file" name="attachment" style="height: 0; width: 0; overflow: none;">
+                
+                <button data-type="text" form="sendTextForm" class="btn btn-secondary" type="submit" id="sendTextBtn" ><i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </form>
+    </div>
+</div>
+{{ chating_to.id|json_script:"receiver_id" }}
+{{ request.user.id|json_script:"sender_id" }}
+{% endblock content %}
+
+{% block scripts %}
+
+<script>
+    document.querySelector("#text").focus()
+    const sender = parseInt(JSON.parse(document.getElementById("sender_id").textContent))
+    const receiver = parseInt(JSON.parse(document.getElementById("receiver_id").textContent))
+    
+    const host = window.location.host
+    const protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://'
+    const path = window.location.pathname
+    const url = protocol + host + "/ws" + path
+    console.log(url)
+
+    const inboxId = "{{inbox.id}}"
+    const chat_id = window.location.pathname.split("/")[2]
+
+    const socket = new WebSocket(url)
+
+    const textForm = document.querySelector('#sendTextForm')
+    const photoInput = document.querySelector("#photoInput")
+    const fileInput = document.querySelector("#fileInput")
+    const sendTextButton = document.querySelector('#sendTextBtn')
+
+    const getFileType = file => {
+        switch(file.type) {
+            case "text/plain":
+                return "Txt"
+                break
+            default:
+                return "Text"
+        }
+    }
+
+    const sendTextMessage = async (message) => {
+        const url = '/chat/send-message/' + chat_id + "/"
+        const csrfmiddlewaretoken = document.querySelector('[name=csrfmiddlewaretoken]').value
+        
+        const payload = {
+            "content_type_key": "text",
+            "content_data": message,
+            "sender": sender,
+            "receiver": receiver,
+            "inbox": inboxId,
+            "message_type": "Text"
+        }
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": 'application/json',
+                'X-CSRFToken': csrfmiddlewaretoken,
+            },
+            body: JSON.stringify(payload)
+        })
+        const data = await response.json()
+        console.log(data)
+            
+    }
+
+    const sendSinglePhotoOrFileAttachment = async (message, type) => {
+        const url = '/chat/send-message/' + chat_id + "/"
+        const csrfmiddlewaretoken = document.querySelector('[name=csrfmiddlewaretoken]').value
+        const formData = new FormData()
+
+        formData.append("content_type_key", type.toLowerCase());
+        formData.append("content_data", message);
+        formData.append("sender", sender);
+        formData.append("receiver", receiver);
+        formData.append("inbox", inboxId);
+        formData.append("message_type", type);
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                'X-CSRFToken': csrfmiddlewaretoken,
+            },
+            body: formData
+        })
+        const data = await response.json()
+        console.log(data)
+            
+    }
+    
+    const sendMultiplePhotoMessages = async (messages) => {
+        const url = '/chat/send-multiple-photo/' + chat_id + "/"
+        const csrfmiddlewaretoken = document.querySelector('[name=csrfmiddlewaretoken]').value
+        const formData = new FormData()
+        
+        formData.append("content_type_key", "photo");
+        formData.append("sender", sender);
+        formData.append("receiver", receiver);
+        formData.append("inbox", inboxId);
+        formData.append("message_type", "Photo");
+
+        Array.from(messages).forEach(message => formData.append("content_data", message))
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                'X-CSRFToken': csrfmiddlewaretoken,
+            },
+            body: formData
+        })
+        const data = await response.json()
+        console.log(data)
+            
+    }
+    
+     const sendAttachmentMessage = async (message) => {
+        const url = '/chat/send-message/' + chat_id + "/"
+        const csrfmiddlewaretoken = document.querySelector('[name=csrfmiddlewaretoken]').value
+        const formData = new FormData()
+
+        formData.append("content_type_key", "file");
+        formData.append("content_data", message);
+        formData.append("sender", sender);
+        formData.append("receiver", receiver);
+        formData.append("inbox", inboxId);
+        formData.append("message_type", "File");
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                'X-CSRFToken': csrfmiddlewaretoken,
+            },
+            body: formData
+        })
+        const data = await response.json()
+        console.log(data)
+            
+    }
+
+    // Handle event on photo selection
+    photoInput.onchange = event => {
+        const multiple = event.target.files.length > 1
+        const file = event.target.files.length > 0 ? event.target.files[0] : null
+        const files = event.target.files.length > 0 ? event.target.files : null
+
+        if(files && multiple) {
+            const fileInput = document.querySelector("#fileInput")
+            sendMultiplePhotoMessages(files)
+        }
+        else if(file) {
+            sendSinglePhotoOrFileAttachment(file, 'Photo')
+        }
+        
+    }
+
+    // Handle event when send button is clicked
+    sendTextButton.onclick = event => {
+        event.preventDefault()
+        const text = textForm.querySelector('#text').value
+        const sendBtn = document.querySelector("#sendTextBtn")
+        const messageType = sendBtn.dataset.type
+        
+        switch (messageType) {
+            case "text":
+                if (text) {
+                    sendTextMessage(text);
+                }
+                break;
+
+            // case "file":
+            //     const photoInput = document.querySelector("#photoInput");
+            //     const photo = photoInput.files.length > 0 ? photoInput.files[0] : null;
+            //     if (photo) {
+            //         sendPhotoMessage(photo)
+            //     }
+            //     break;
+
+            default:
+                console.warn("Unknown message type:", messageType);
+        }
+
+    }
+
+    // Handle event on file attachment
+    fileInput.onchange = event => {
+        const file = event.target.files.length > 0 ? event.target.files[0] : null
+
+        if(file) {
+            console.log(file)
+            sendSinglePhotoOrFileAttachment(file, 'File')
+        }
+    }
+    // Append new message to dom
+    const appendNewMessage = messagePayload => {
+        const {content_object, message_type, timestamp} = messagePayload.payload
+        let content = ''
+        if(message_type === 'Text') {
+            content = `<span>${messagePayload.payload.content_object.text}</span>`
+        }
+        else if(message_type === 'Photo') {
+            content = `<img src="${content_object.photo}" alt="Photo" class="img-fluid rounded" style="max-width: 300px;" />`
+        }
+        else if(message_type == "File") {
+            const content_file = content_object.file
+            const extension = content_file.split(".").pop()
+            content = `<a class="text-decoration-none" href=${content_file} target="_blank"></a>`
+
+            switch(extension) {
+                case "txt":
+                    content = `<a href=${content_object.file} class="text-decoration-none" target="_blank"><i class="fa-solid fa-file-lines"></i></a>`
+                    break
+                case "pdf":
+                    content = `<a href=${content_object.file} class="text-decoration-none" target="_blank"><i class="fa-solid fa-file-pdf"></i></a>`
+                    break
+                default:
+                    content = `<a class="text-decoration-none" href=${content_file} target="_blank"></a>`
+            }
+        }
+        const newMessage = `
+        <li class="list-group-item list-group-flush mb-2 ${messagePayload.payload.sender == sender ? 'text-end': 'text-start'}">
+            <div>${content}</div>
+            <div class="text-muted small mt-1 ${messagePayload.payload.sender == sender ? 'text-end': 'text-start'}">
+                ${new Date(timestamp).toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                    timeZone: 'Asia/Dhaka'
+                }).replace(/ AM| PM/, '')}
+            </div>
+        </li>`
+        const messages = document.querySelector("#messages")
+        messages.insertAdjacentHTML("beforeend", newMessage)
+    }
+    
+    // Handle socket on receiving messaage from the server
+    socket.onmessage = event => {
+        appendNewMessage(JSON.parse(event['data']))
+    }
+
+</script>
+
+{% endblock scripts %}

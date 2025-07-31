@@ -100,28 +100,21 @@ class RetrieveProfile(generics.RetrieveUpdateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class UpdateProfile(generics.UpdateAPIView):
-    permission_classes = [ProfileOwner, ]
-    serializer_class = ProfileSerializer
-    queryset = Profile.objects.all()
+class UpdateProfile(APIView):
+    permission_classes = [AccountOwner, ]
+    serializer_class = UserSerializer
 
-    def get_object(self):
-        profile = get_object_or_404(Profile, id=self.request.user.id)
-        return profile
-
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        profile = self.get_object()
-        serializer = self.get_serializer(profile, data=request.data, partial=partial)
+    def post(self, *args, **kwargs):
+        user = get_object_or_404(get_user_model(), id=self.kwargs.get("pk"))
+        serializer = ProfileSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
 
-        if getattr(profile, '_prefetched_objects_cache', None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
-            profile._prefetched_objects_cache = {}
+        profile = Profile.objects.filter(user=user)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if profile.exists():
+            serializer = ProfileSerializer(instance=profile.first(), data=self.request.data)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class UploadPhotos(APIView):

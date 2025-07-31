@@ -7,6 +7,7 @@ from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .utils import generate_otp
@@ -19,6 +20,7 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
+    user_id = serializers.IntegerField(source='id')
 
     class Meta:
         model = User
@@ -153,7 +155,10 @@ class OptSerializer(serializers.Serializer):
         self.otp.used = True
         self.otp.save()
 
-        self.validated_data['user_id'] = user.id
+        refresh = RefreshToken.for_user(user)
+
+        self.validated_data['access'] = str(refresh)
+        self.validated_data['refresh'] = str(refresh.access_token)
 
         return {"success": True, **self.validated_data}
     
@@ -242,9 +247,6 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = "__all__"
-        extra_kwargs = {
-            "user": {"read_only": True}
-        }
 
 
 class ImageSerializer(serializers.ModelSerializer):

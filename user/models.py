@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
@@ -7,9 +8,8 @@ from .managers import  UserManager
 
 
 class User(AbstractBaseUser, PermissionsMixin, Timestamp):
-    name = models.CharField(max_length=150)
-    email = models.EmailField(max_length=150, unique=True)
-    phone_number = models.CharField(max_length=13, null=True, blank=True)
+    full_name = models.CharField(max_length=150)
+    email_address = models.EmailField(max_length=150, unique=True)
     is_active = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
@@ -19,8 +19,8 @@ class User(AbstractBaseUser, PermissionsMixin, Timestamp):
     photo = models.ImageField(null=True, blank=True, upload_to="user_images")
     objects = UserManager()
 
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["name", ]
+    USERNAME_FIELD = "email_address"
+    REQUIRED_FIELDS = ["full_name", ]
     
     class Meta:
         ordering = ["-id"]
@@ -41,14 +41,14 @@ class Profile(Timestamp):
 
     user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
     bio = models.TextField(null=True)
-    dob = models.DateField(null=True)
-    gender = models.CharField(choices=list(GENDER), max_length=6, null=True)
+    dob = models.DateField()
+    gender = models.CharField(choices=list(GENDER), max_length=6)
     company = models.ForeignKey(Company, null=True, on_delete=models.SET_NULL)
     ship = models.ForeignKey(Ship, null=True, on_delete=models.SET_NULL)
-    country = models.CharField(null=True)
-    gender_preference = models.CharField(choices=list(GENDER_CHOICES), max_length=6, null=True)
-    age_from = models.IntegerField(null=True)
-    age_to = models.IntegerField(null=True)
+    country = models.CharField()
+    gender_preference = models.CharField(choices=list(GENDER_CHOICES), max_length=6)
+    age_from = models.IntegerField()
+    age_to = models.IntegerField()
     banned_countries = models.JSONField(default=list)
 
     def __str__(self):
@@ -61,4 +61,24 @@ class Image(models.Model):
 
     def __str__(self):
         return  f"{self.user.name} - {self.image.url}"
+
+
+class Friend(models.Model):
+    connection_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    sender = models.ForeignKey(User, related_name='sent_requests', on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, related_name='received_requests', on_delete=models.CASCADE)
+    accepted = models.BooleanField(default=False)
+    blocked = models.BooleanField(default=False)
+    unfriended = models.BooleanField(default=False)
+    sent_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = (
+            ("sender", "receiver")
+        )
+        ordering = ['-id']
+
+    def __str__(self):
+        return f"{self.sender.name} sent a freind request to {self.receiver.name}"
 
