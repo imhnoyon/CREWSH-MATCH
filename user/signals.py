@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 
 from .utils import generate_otp
 
-from .models import Otp, Profile
+from .models import AccountVerificationOtp, Profile
 
 User = get_user_model()
 
@@ -15,7 +15,7 @@ User = get_user_model()
 def send_otp(instance, created, *args, **kwargs):
     if created:
         if not instance.is_superuser:
-            otp, _ = Otp.objects.update_or_create(
+            otp, _ = AccountVerificationOtp.objects.update_or_create(
                 user=instance,
                 defaults={
                     'code': generate_otp(),
@@ -25,6 +25,6 @@ def send_otp(instance, created, *args, **kwargs):
                 subject="Account Verification",
                 message=otp.code,
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[instance.email],
+                recipient_list=[instance.email_address],
                 fail_silently=True
             )

@@ -2,12 +2,14 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from .views import (
-    CreateUser,
-    AuthToken,
-    SendOtp,
-    VerifyOtp,
+    Signup,
+    Signin,
+    ForgotPassword,
+    ResendVerificationCode,
+    VerifyEmail,
+    VerifyResetCode,
     ChangePassword,
-    ConfirmPasswordReset,
+    ResetPassword,
     UpdateUser,
     RetrieveProfile,
     UpdateProfile,
@@ -19,13 +21,15 @@ app_name = "user"
 
 
 urlpatterns = [
-    path("create/", CreateUser.as_view(), name='register'),
-    path("token/", AuthToken.as_view(), name='token'),
+    path("sign-up/", Signup.as_view(), name='register'),
+    path("resend-verification-code/", ResendVerificationCode.as_view(), name='resend-verification-code'),
+    path("verify-email/", VerifyEmail.as_view(), name='verify-email'),
+    path("sign-in/", Signin.as_view(), name='signin'),
+    path("forgot-password/", ForgotPassword.as_view(), name='forgot-password'),
+    path("verify-reset-code/", VerifyResetCode.as_view(), name='verify-reset-password'),
     path("token/refresh/", TokenRefreshView.as_view(), name='refresh-token'),
-    path("verify/", VerifyOtp.as_view(), name='verify'),
-    path("send-otp/", SendOtp.as_view(), name='send-otp'),
     path("change-password/", ChangePassword.as_view(), name='change-password'),
-    path("confirm-password-reset/", ConfirmPasswordReset.as_view(), name='confirm-password-reset'),
+    path("reset-password/", ResetPassword.as_view(), name='confirm-password-reset'),
     path("update/<int:pk>/", UpdateUser.as_view(), name='update-user'),
     path("retrieve-profile/<int:pk>/", RetrieveProfile.as_view(), name='retrieve-profile'),
     path("update-profile/<int:pk>/", UpdateProfile.as_view(), name='update-profile'),

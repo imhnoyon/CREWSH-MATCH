@@ -5,21 +5,21 @@ from django.contrib.auth.hashers import make_password
 class UserManager(BaseUserManager):
     use_in_migrations = True
     
-    def _create_user(self, name, email, password, **extra_fields):
-        if not name:
+    def _create_user(self, full_name, email_address, password, **extra_fields):
+        if not full_name:
             raise ValueError("Name must be set")
-        if not email:
+        if not full_name:
             raise ValueError("Email must be set")
         
-        email = self.normalize_email(email)
-        user = self.model(name=name, email=email, **extra_fields)
+        email = self.normalize_email(email_address)
+        user = self.model(full_name=full_name, email_address=email_address, **extra_fields)
         user.password = make_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, name, email, password, **extra_fields):
+    def create_superuser(self, full_name, email_address, password, **extra_fields):
         user = self._create_user(
-            name=name, email=email, password=password,
+            full_name=full_name, email_address=email_address, password=password,
             is_staff=True, is_active=True, is_superuser=True,
             **extra_fields
         )

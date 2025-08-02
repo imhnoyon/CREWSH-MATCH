@@ -16,8 +16,10 @@ from .permissions import AccountOwner, ProfileOwner
 from .serializers import (
     UserSerializer,
     AuthTokenSerializer,
-    SendOtpSerializer,
-    OptSerializer,
+    ForgotPasswordSerializer,
+    ResendVerificationCodeSerializer,
+    VerifyResetCodeSerializer,
+    VerifyOptSerializerWithUserId,
     ChangePasswordSerializer,
     PasswordResetConfirmSerializer,
     ProfileSerializer,
@@ -26,39 +28,68 @@ from .serializers import (
 )
 
 
-class CreateUser(generics.CreateAPIView):
+class Signup(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny, ]
     serializer_class = UserSerializer
     queryset = get_user_model().objects.all()
- 
 
-class AuthToken(TokenObtainPairView):
-    serializer_class = AuthTokenSerializer
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        response = {"user_id": serializer.data['user_id']}
+        return Response(response, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class SendOtp(generics.GenericAPIView):
+class ResendVerificationCode(generics.GenericAPIView):
     """
     Use this to resend otp code to specified email
     """
-    serializer_class = SendOtpSerializer
+    serializer_class = ResendVerificationCodeSerializer
 
     def post(self, *args, **kwargs):
         serializer = self.get_serializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        response = {'message': "Otp sent !", 'success': True}
-        return Response(response, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class VerifyOtp(generics.GenericAPIView):
+class VerifyEmail(generics.GenericAPIView):
     permission_classes = [permissions.AllowAny, ]
 
     def post(self, *args, **kwargs):
-        serializer = OptSerializer(data=self.request.data)
+        serializer = VerifyOptSerializerWithUserId(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.save()
         return Response(data, status=status.HTTP_200_OK)
-    
+
+
+class Signin(TokenObtainPairView):
+    serializer_class = AuthTokenSerializer
+
+
+class ForgotPassword(generics.GenericAPIView):
+
+    serializer_class = ForgotPasswordSerializer
+
+    def post(self, *args, **kwargs):
+        serializer = self.get_serializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.save()
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class VerifyResetCode(generics.GenericAPIView):
+    permission_classes = [permissions.AllowAny, ]
+    serializer_class = VerifyResetCodeSerializer
+
+    def post(self, *args, **kwargs):
+        serializer = self.get_serializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        response = serializer.save()
+        return Response(response, status=status.HTTP_200_OK)
+
 
 class ChangePassword(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
@@ -70,15 +101,15 @@ class ChangePassword(generics.GenericAPIView):
         return Response({"message": "Password changed successfully", "success": True}, status=status.HTTP_200_OK)
     
 
-class ConfirmPasswordReset(generics.GenericAPIView):
+class ResetPassword(generics.GenericAPIView):
     permission_classes = [permissions.AllowAny, ]
     serializer_class = PasswordResetConfirmSerializer
 
     def post(self, *args, **kwargs):
         serializer = self.get_serializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"message": "Password reset successful", "success": True}, status=status.HTTP_200_OK)
+        response = serializer.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class UpdateUser(generics.UpdateAPIView):

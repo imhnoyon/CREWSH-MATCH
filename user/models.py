@@ -1,10 +1,29 @@
 import uuid
 from django.db import models
+from django.conf import settings
+from datetime import timedelta
+from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
 from core.models import Timestamp, Company, Ship
 
 from .managers import  UserManager
+
+
+class OtpCode(models.Model):
+    code = models.CharField(max_length=6)
+    used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expired_at = models.DateTimeField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        expiry_seconds = getattr(settings, 'OTP_EXPIRY_SECONDS', 60 * 15)
+        self.expired_at = timezone.now() + timedelta(seconds=expiry_seconds)
+        return super().save(*args, **kwargs)
 
 
 class User(AbstractBaseUser, PermissionsMixin, Timestamp):
@@ -25,14 +44,30 @@ class User(AbstractBaseUser, PermissionsMixin, Timestamp):
     class Meta:
         ordering = ["-id"]
 
-
-class Otp(Timestamp):
-    user = models.OneToOneField(User, related_name='otp', on_delete=models.CASCADE)
-    code = models.CharField(max_length=6)
-    used = models.BooleanField(default=False)
+    @property
+    def role(self):
+        role = "user"
+        if self.is_superuser:
+            role = "admin"
+        return role
 
     def __str__(self):
-        return f"{self.user.name} - {self.code}"
+        return self.full_name
+
+
+class AccountVerificationOtp(OtpCode):
+    user = models.OneToOneField(User, related_name='otp', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.user.full_name} - {self.code}"
+
+
+class PasswordResetOtp(OtpCode):
+    user = models.ForeignKey(User, related_name='verification_codes', on_delete=models.CASCADE)
+    secret_key = models.UUIDField(default=uuid.uuid4, editable=False)
+
+    def __str__(self):
+        return f"{self.user.full_name} - {self.code}"
 
 
 class Profile(Timestamp):
@@ -52,7 +87,7 @@ class Profile(Timestamp):
     banned_countries = models.JSONField(default=list)
 
     def __str__(self):
-        return self.user.name
+        return self.user.full_name
 
 
 class Image(models.Model):
@@ -60,7 +95,7 @@ class Image(models.Model):
     image = models.ImageField(upload_to="user_images")
 
     def __str__(self):
-        return  f"{self.user.name} - {self.image.url}"
+        return  f"{self.user.full_name} - {self.image.url}"
 
 
 class Friend(models.Model):
@@ -80,5 +115,6 @@ class Friend(models.Model):
         ordering = ['-id']
 
     def __str__(self):
-        return f"{self.sender.name} sent a freind request to {self.receiver.name}"
+        return f"{self.sender.full_name} sent a freind request to {self.receiver.full_name}"
+
 

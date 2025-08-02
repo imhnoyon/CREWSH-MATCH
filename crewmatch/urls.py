@@ -3,7 +3,7 @@ from django.urls import path, include
 
 
 api_urlpatterns = [
-    path("user/", include("user.urls")),
+    path("auth/", include("user.urls")),
     path("chat/", include("chat.urls")),
 ]
 
