@@ -15,15 +15,10 @@ class OtpCode(models.Model):
     used = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     expired_at = models.DateTimeField(blank=True, null=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
-
-    def save(self, *args, **kwargs):
-        expiry_seconds = getattr(settings, 'OTP_EXPIRY_SECONDS', 60 * 15)
-        self.expired_at = timezone.now() + timedelta(seconds=expiry_seconds)
-        return super().save(*args, **kwargs)
 
 
 class User(AbstractBaseUser, PermissionsMixin, Timestamp):
@@ -61,6 +56,12 @@ class AccountVerificationOtp(OtpCode):
     def __str__(self):
         return f"{self.user.full_name} - {self.code}"
 
+    def save(self, *args, **kwargs):
+        if not self.expired_at:
+            expiry_seconds = getattr(settings, 'OTP_EXPIRY_SECONDS', 60 * 15)
+            self.expired_at = timezone.now() + timedelta(seconds=expiry_seconds)
+        return super().save(*args, **kwargs)
+
 
 class PasswordResetOtp(OtpCode):
     user = models.ForeignKey(User, related_name='verification_codes', on_delete=models.CASCADE)
@@ -68,6 +69,11 @@ class PasswordResetOtp(OtpCode):
 
     def __str__(self):
         return f"{self.user.full_name} - {self.code}"
+
+    def save(self, *args, **kwargs):
+        expiry_seconds = getattr(settings, 'OTP_EXPIRY_SECONDS', 60 * 15)
+        self.expired_at = timezone.now() + timedelta(seconds=expiry_seconds)
+        return super().save(*args, **kwargs)
 
 
 class Profile(Timestamp):
