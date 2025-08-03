@@ -49,6 +49,12 @@ class User(AbstractBaseUser, PermissionsMixin, Timestamp):
     def __str__(self):
         return self.full_name
 
+    def get_photo(self):
+        photo = ""
+        if self.photo:
+            photo = self.photo.url
+        return photo
+
 
 class AccountVerificationOtp(OtpCode):
     user = models.OneToOneField(User, related_name='otp', on_delete=models.CASCADE)
@@ -104,23 +110,5 @@ class Image(models.Model):
         return  f"{self.user.full_name} - {self.image.url}"
 
 
-class Friend(models.Model):
-    connection_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    sender = models.ForeignKey(User, related_name='sent_requests', on_delete=models.CASCADE)
-    receiver = models.ForeignKey(User, related_name='received_requests', on_delete=models.CASCADE)
-    accepted = models.BooleanField(default=False)
-    blocked = models.BooleanField(default=False)
-    unfriended = models.BooleanField(default=False)
-    sent_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        unique_together = (
-            ("sender", "receiver")
-        )
-        ordering = ['-id']
-
-    def __str__(self):
-        return f"{self.sender.full_name} sent a freind request to {self.receiver.full_name}"
 
 

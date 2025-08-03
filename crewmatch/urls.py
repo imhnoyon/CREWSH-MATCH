@@ -4,6 +4,7 @@ from django.urls import path, include
 
 api_urlpatterns = [
     path("auth/", include("user.urls")),
+    path("match/", include("match.urls")),
     path("chat/", include("chat.urls")),
 ]
 

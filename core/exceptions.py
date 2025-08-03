@@ -4,6 +4,10 @@ from rest_framework.exceptions import ValidationError
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
 
+    if response is not None:
+        if 'detail' in response.data:
+            response.data['message'] = response.data.pop('detail')
+
     if response is not None and isinstance(exc, ValidationError):
         flat_errors = {}
         for key, value in response.data.items():

@@ -1,15 +1,19 @@
 from django.urls import path
 
-from . import apis
-from . import views
+from . import template_views
+
+from .views import (
+    ListInbox,
+    ChatMessages
+)
 
 # Api
 urlpatterns = [
-    path("send-message/<uuid:inbox_id>/", apis.SendMessage.as_view(), name='send-message'),
-    path("send-multiple-photo/<uuid:inbox_id>/", apis.SendMultiplePhoto.as_view(), name='send-multiple-photo'),
+    path("inbox/", ListInbox.as_view(), name='list-inbox'),
+    path("messages/<uuid:inbox_id>/", ChatMessages.as_view(), name='chat-messages'),
 ]
 
 # Templates views
 urlpatterns += [
-    path("<uuid:inbox_id>/", views.Chat.as_view(), name='chat'),
+    path("<uuid:inbox_id>/", template_views.Chat.as_view(), name='chat'),
 ]

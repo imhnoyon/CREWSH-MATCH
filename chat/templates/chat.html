@@ -4,7 +4,7 @@
 {% block content %}
 <div class="row">
     <div class="col-md-12 col-lg-12 mb-3">
-        <h3 class="mb-3">{{chating_to.name}}</h3>
+        <h3 class="mb-3">{{chating_to.username}}</h3>
         <hr class="">
         <ul class="list-group list-group-flush" id="messages">
             {% for message in messages %}
@@ -48,13 +48,16 @@
     const host = window.location.host
     const protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://'
     const path = window.location.pathname
-    const url = protocol + host + "/ws" + path
-    console.log(url)
 
     const inboxId = "{{inbox.id}}"
     const chat_id = window.location.pathname.split("/")[2]
+    const url = "ws://localhost:8001/ws/chat/" + inboxId + "/" + "?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MzAxOTg3LCJpYXQiOjE3NTQyMTU1ODcsImp0aSI6IjFiNTg5MWVlNDY0MDQzYTM4ZGYwNDFkYmE4NWEyMWNkIiwidXNlcl9pZCI6IjIifQ.rrTLmIRy40NdgYRjXi5SJbR0EVErV2usS3fnCjDzaZg"
 
     const socket = new WebSocket(url)
+
+    socket.onmessage = event => {
+        console.log(event)
+    }
 
     const textForm = document.querySelector('#sendTextForm')
     const photoInput = document.querySelector("#photoInput")

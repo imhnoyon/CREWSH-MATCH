@@ -2,7 +2,7 @@ from django.db.models import Q
 from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from user.models import Friend
+from match.models import Match
 from .models import Inbox, Message
 
 
@@ -13,11 +13,11 @@ class InboxList(LoginRequiredMixin, generic.ListView):
     context_object_name = "inboxes"
 
     def get_queryset(self):
-        friend_list = Friend.objects.filter(
+        friend_list = Match.objects.filter(
             Q(sender=self.request.user) | Q(receiver=self.request.user)
-        ).filter(accepted=True, unfriended=False, blocked=False) \
+        ).filter(unfriended=False, blocked=False) \
         .values_list("id", flat=True)
-        inboxes = Inbox.objects.filter(friend_object__in=friend_list)
+        inboxes = Inbox.objects.filter(match__in=friend_list)
         return inboxes
     
 
@@ -32,7 +32,7 @@ class Chat(LoginRequiredMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         inbox = self.get_object()
-        friend_object = Friend.objects.get(id=inbox.friend_object.id)
+        match_object = Match.objects.get(id=inbox.match.id)
         context['messages'] = Message.objects.filter(inbox=inbox)
-        context['chating_to'] = friend_object.sender if self.request.user.pk != friend_object.sender.pk else friend_object.receiver
+        context['chating_to'] = match_object.sender if self.request.user.pk != match_object.sender.pk else match_object.receiver
         return context

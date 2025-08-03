@@ -33,8 +33,8 @@ INSTALLED_APPS = [
     'django_filters',
     'core',
     'user',
+    'match',
     'chat',
-    'content',
 ]
 
 MIDDLEWARE = [
@@ -217,3 +217,9 @@ STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_KEY = os.environ.get("STRIPE_WEBHOOK_KEY", "")
 STRIPE_SUCCESS_URL = os.environ.get("STRIPE_SUCCESS_URL", "http://localhost:8000/payment/success/")
 STRIPE_CANCEL_URL = os.environ.get("STRIPE_CANCEL_URL", "http://localhost:8000/payment/cancel/")
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
