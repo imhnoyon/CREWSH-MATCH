@@ -1,13 +1,19 @@
+from tokenize import TokenError
+from typing import Any
 from datetime import timedelta
-
 from django.conf import settings
 from django.utils import timezone
 from django.core.mail import send_mail
+from django.utils.translation import gettext_lazy as _
+
 
 from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
+from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
+from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .utils import generate_otp
@@ -107,7 +113,58 @@ class AuthTokenSerializer(TokenObtainPairSerializer):
             "user_id": str(self.user.id),
             "role": self.user.role
         }
-    
+
+
+class RefreshTokenSerializer(serializers.Serializer):
+    refresh_token = serializers.CharField()
+    access = serializers.CharField(read_only=True)
+    token_class = RefreshToken
+
+    default_error_messages = {
+        "no_active_account": _("No active account found for the given token.")
+    }
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, str]:
+        try:
+            refresh = self.token_class(attrs["refresh_token"])
+        except TokenError:
+            raise ValidationError({
+                "message": "Your session has expired. Please log in again.",
+                "error": "invalid_token"
+            })
+        user_id = refresh.payload.get(api_settings.USER_ID_CLAIM, None)
+        if user_id and (
+                user := get_user_model().objects.get(
+                    **{api_settings.USER_ID_FIELD: user_id}
+                )
+        ):
+            if not api_settings.USER_AUTHENTICATION_RULE(user):
+                raise AuthenticationFailed(
+                    self.error_messages["no_active_account"],
+                    "no_active_account",
+                )
+
+        data = {"access_token": str(refresh.access_token)}
+
+        if api_settings.ROTATE_REFRESH_TOKENS:
+            if api_settings.BLACKLIST_AFTER_ROTATION:
+                try:
+                    # Attempt to blacklist the given refresh token
+                    refresh.blacklist()
+                except AttributeError:
+                    # If blacklist app not installed, `blacklist` method will
+                    # not be present
+                    pass
+
+            refresh.set_jti()
+            refresh.set_exp()
+            refresh.set_iat()
+            refresh.outstand()
+
+            data["refresh_token"] = str(refresh)
+
+        return data
+
 
 class ForgotPasswordSerializer(BaseOtpSerializer):
     email_address = serializers.EmailField()
@@ -280,15 +337,6 @@ class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
     confirm_password = serializers.CharField(required=True)
-
-    def validate_old_password(self, value):
-        request = self.context['request']
-        user = request.user
-
-        if not user.check_password(value):
-            raise serializers.ValidationError("Wrong password")
-
-        return value
     
     def validate_confirm_password(self, value):
         new_password = self.initial_data.get("new_password")
@@ -297,6 +345,16 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError("Passwords mismatched")
         
         return value
+
+    def validate(self, attrs):
+        old_password = attrs['old_password']
+        request = self.context['request']
+        user = request.user
+
+        if not user.check_password(old_password):
+            raise serializers.ValidationError({"message": "Wrong password"})
+
+        return attrs
     
     def save(self, **kwargs):
         request = self.context['request']
@@ -320,17 +378,15 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     #
     #     return  value
 
-    def validate_user_id(self, value):
-        try:
-            User.objects.get(id=value)
-            return value
-        except User.DoesNotExist:
-            raise serializers.ValidationError("No user registered with the provided user_id")
-        return value
-
     def validate(self, data):
         user_id = data.get("user_id")
         secret_key = data.get("secret_key")
+
+        try:
+            User.objects.get(id=user_id)
+
+        except User.DoesNotExist:
+            raise serializers.ValidationError({"message": "No user registered with the provided user_id"})
 
         try:
             self.user = User.objects.get(pk=user_id)

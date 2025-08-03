@@ -8,7 +8,8 @@ from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView
+    TokenObtainPairView,
+    TokenRefreshView
 )
 
 from  .models import Profile
@@ -24,7 +25,8 @@ from .serializers import (
     PasswordResetConfirmSerializer,
     ProfileSerializer,
     ImageSerializer,
-    MultipleImageUploadSerializer
+    MultipleImageUploadSerializer,
+    RefreshTokenSerializer
 )
 
 
@@ -110,6 +112,14 @@ class ResetPassword(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         response = serializer.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class RefreshToken(TokenRefreshView):
+    serializer_class = RefreshTokenSerializer
+
+    def get_serializer(self, *args, **kwargs):
+        data = {"refresh": self.request.data.get("refresh_token")}
+        super().get_serializer(data=data, *args, **kwargs)
 
 
 class UpdateUser(generics.UpdateAPIView):
