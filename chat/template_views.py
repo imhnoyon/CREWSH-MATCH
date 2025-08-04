@@ -35,4 +35,5 @@ class Chat(LoginRequiredMixin, generic.DetailView):
         match_object = Match.objects.get(id=inbox.match.id)
         context['messages'] = Message.objects.filter(inbox=inbox)
         context['chating_to'] = match_object.sender if self.request.user.pk != match_object.sender.pk else match_object.receiver
+        context['inbox_id'] = inbox.inbox_id
         return context

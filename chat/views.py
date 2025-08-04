@@ -20,7 +20,7 @@ class ListInbox(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         match_list = Match.objects.filter(Q(sender=user) | Q(receiver=user)).filter(
-            unfriended=False, blocked=False).values_list(
+            unfriended=False).values_list(
             "id", flat=True
         )
         inboxes = Inbox.objects.filter(match__id__in=match_list)
@@ -33,5 +33,3 @@ class ChatMessages(generics.RetrieveAPIView):
     queryset = Inbox.objects.all()
     lookup_url_kwarg = "inbox_id"
     lookup_field = "inbox_id"
-
-

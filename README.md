@@ -38,23 +38,6 @@ ENV
     EMAIL_HOST_PASSWORD=gmail_app_password
     
 ```
-Apis
-===
-
-```bash
-    User
-
-    /user/create/ done
-    /user/token/ done
-    /user/send-otp/ done
-    /user/verify/ done
-    /user/update/ done
-    /user/change-password/ done
-    /user/reset-password/ done
-    /user/retrieve-profile/<:id>/ done
-    /user/update-profile/<:id>/ done
-
-```
 
 PostgreSQL
 ===

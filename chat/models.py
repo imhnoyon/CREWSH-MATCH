@@ -3,8 +3,6 @@ import pytz
 
 from django.db import models
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey
 
 from match.models import Match
 
@@ -24,6 +22,7 @@ class Inbox(models.Model):
     """
     inbox_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     match = models.OneToOneField(Match, related_name='inbox', on_delete=models.CASCADE)
+    online_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
 
     def __str__(self):
         return str(self.inbox_id)

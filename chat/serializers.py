@@ -1,7 +1,11 @@
+from django.contrib.auth import get_user_model
+
 from rest_framework import serializers
 
 from .models import Inbox, Message
 
+
+User = get_user_model()
 
 
 class InboxSerializer(serializers.ModelSerializer):
@@ -44,7 +48,10 @@ class InboxSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ['id', 'sender', 'receiver', "text", "seen", "deleted", "timestamp"]
+        fields = ['id', "inbox", 'sender', 'receiver', "text", "seen", "deleted", "timestamp"]
+        extra_kwargs = {
+            "inbox": {"write_only": True}
+        }
 
     def to_representation(self, instance):
         context = super().to_representation(instance)
@@ -54,6 +61,15 @@ class MessageSerializer(serializers.ModelSerializer):
         context['receiver'] = {"id": receiver.id, "full_name": receiver.full_name, "photo": receiver.get_photo()}
         return context
 
+    def save(self, **kwargs):
+        receiver = self.validated_data['receiver']
+        inbox = self.validated_data['inbox']
+
+        if receiver in inbox.online_users.all():
+            self.validated_data['seen'] = True
+
+        super().save(**kwargs)
+
 class ChatMessageSerializer(serializers.ModelSerializer):
     messages = serializers.SerializerMethodField(read_only=True, method_name="get_messages")
 
@@ -62,5 +78,5 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         fields = ("id", "inbox_id", "messages", )
 
     def get_messages(self, obj):
-        messages = obj.message_set.all()
+        messages = obj.message_set.all().order_by("-id")
         return  MessageSerializer(messages, many=True).data

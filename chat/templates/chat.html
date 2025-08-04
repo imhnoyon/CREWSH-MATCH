@@ -17,7 +17,7 @@
             {% csrf_token %}
             <div class="input-group d-flex" >
                 <!-- Text input -->
-                <input id="text" class="form-control" type="text" placeholder="Send a message">
+                <input id="text" class="form-control" value="Hi" type="text" placeholder="Say hi">
                 <!-- Photo input single + multipe -->
                 <label class="input-group-text pe-5" for="photoInput">
                     <i class="fa-solid fa-image"></i>
@@ -51,7 +51,9 @@
 
     const inboxId = "{{inbox.id}}"
     const chat_id = window.location.pathname.split("/")[2]
-    const url = "ws://localhost:8001/ws/chat/" + inboxId + "/" + "?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MzAxOTg3LCJpYXQiOjE3NTQyMTU1ODcsImp0aSI6IjFiNTg5MWVlNDY0MDQzYTM4ZGYwNDFkYmE4NWEyMWNkIiwidXNlcl9pZCI6IjIifQ.rrTLmIRy40NdgYRjXi5SJbR0EVErV2usS3fnCjDzaZg"
+    const connection_id = "{{inbox_id}}"
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MzY2MTU0LCJpYXQiOjE3NTQyNzk3NTQsImp0aSI6ImFlYTQ1ZmNjYzVhZTQ2MGQ4ZTlmNTUxZjNiNDZlNDI3IiwidXNlcl9pZCI6IjEifQ.9_16TFcehOrf-uagsEM8ndrLou02i_CGyQOsRUIHEJs"
+    const url = "ws://localhost:8001/ws/chat/" + connection_id + "/" + "?token=" + token
 
     const socket = new WebSocket(url)
 
@@ -64,129 +66,21 @@
     const fileInput = document.querySelector("#fileInput")
     const sendTextButton = document.querySelector('#sendTextBtn')
 
-    const getFileType = file => {
-        switch(file.type) {
-            case "text/plain":
-                return "Txt"
-                break
-            default:
-                return "Text"
-        }
-    }
 
-    const sendTextMessage = async (message) => {
-        const url = '/chat/send-message/' + chat_id + "/"
-        const csrfmiddlewaretoken = document.querySelector('[name=csrfmiddlewaretoken]').value
-        
+    const sendTextMessage = message => {
         const payload = {
-            "content_type_key": "text",
-            "content_data": message,
+            "text": message,
             "sender": sender,
             "receiver": receiver,
             "inbox": inboxId,
-            "message_type": "Text"
         }
-
-        const response = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": 'application/json',
-                'X-CSRFToken': csrfmiddlewaretoken,
-            },
-            body: JSON.stringify(payload)
-        })
-        const data = await response.json()
-        console.log(data)
+<!--        const payload = {-->
+<!--            "sender": sender,-->
+<!--            "receiver": receiver,-->
+<!--            "inbox": inboxId,-->
+<!--        }-->
+        socket.send(JSON.stringify(payload))
             
-    }
-
-    const sendSinglePhotoOrFileAttachment = async (message, type) => {
-        const url = '/chat/send-message/' + chat_id + "/"
-        const csrfmiddlewaretoken = document.querySelector('[name=csrfmiddlewaretoken]').value
-        const formData = new FormData()
-
-        formData.append("content_type_key", type.toLowerCase());
-        formData.append("content_data", message);
-        formData.append("sender", sender);
-        formData.append("receiver", receiver);
-        formData.append("inbox", inboxId);
-        formData.append("message_type", type);
-
-        const response = await fetch(url, {
-            method: "POST",
-            headers: {
-                'X-CSRFToken': csrfmiddlewaretoken,
-            },
-            body: formData
-        })
-        const data = await response.json()
-        console.log(data)
-            
-    }
-    
-    const sendMultiplePhotoMessages = async (messages) => {
-        const url = '/chat/send-multiple-photo/' + chat_id + "/"
-        const csrfmiddlewaretoken = document.querySelector('[name=csrfmiddlewaretoken]').value
-        const formData = new FormData()
-        
-        formData.append("content_type_key", "photo");
-        formData.append("sender", sender);
-        formData.append("receiver", receiver);
-        formData.append("inbox", inboxId);
-        formData.append("message_type", "Photo");
-
-        Array.from(messages).forEach(message => formData.append("content_data", message))
-
-        const response = await fetch(url, {
-            method: "POST",
-            headers: {
-                'X-CSRFToken': csrfmiddlewaretoken,
-            },
-            body: formData
-        })
-        const data = await response.json()
-        console.log(data)
-            
-    }
-    
-     const sendAttachmentMessage = async (message) => {
-        const url = '/chat/send-message/' + chat_id + "/"
-        const csrfmiddlewaretoken = document.querySelector('[name=csrfmiddlewaretoken]').value
-        const formData = new FormData()
-
-        formData.append("content_type_key", "file");
-        formData.append("content_data", message);
-        formData.append("sender", sender);
-        formData.append("receiver", receiver);
-        formData.append("inbox", inboxId);
-        formData.append("message_type", "File");
-
-        const response = await fetch(url, {
-            method: "POST",
-            headers: {
-                'X-CSRFToken': csrfmiddlewaretoken,
-            },
-            body: formData
-        })
-        const data = await response.json()
-        console.log(data)
-            
-    }
-
-    // Handle event on photo selection
-    photoInput.onchange = event => {
-        const multiple = event.target.files.length > 1
-        const file = event.target.files.length > 0 ? event.target.files[0] : null
-        const files = event.target.files.length > 0 ? event.target.files : null
-
-        if(files && multiple) {
-            const fileInput = document.querySelector("#fileInput")
-            sendMultiplePhotoMessages(files)
-        }
-        else if(file) {
-            sendSinglePhotoOrFileAttachment(file, 'Photo')
-        }
-        
     }
 
     // Handle event when send button is clicked
@@ -195,25 +89,7 @@
         const text = textForm.querySelector('#text').value
         const sendBtn = document.querySelector("#sendTextBtn")
         const messageType = sendBtn.dataset.type
-        
-        switch (messageType) {
-            case "text":
-                if (text) {
-                    sendTextMessage(text);
-                }
-                break;
-
-            // case "file":
-            //     const photoInput = document.querySelector("#photoInput");
-            //     const photo = photoInput.files.length > 0 ? photoInput.files[0] : null;
-            //     if (photo) {
-            //         sendPhotoMessage(photo)
-            //     }
-            //     break;
-
-            default:
-                console.warn("Unknown message type:", messageType);
-        }
+        sendTextMessage(text)
 
     }
 
@@ -270,7 +146,8 @@
     
     // Handle socket on receiving messaage from the server
     socket.onmessage = event => {
-        appendNewMessage(JSON.parse(event['data']))
+<!--        appendNewMessage(JSON.parse(event['data']))-->
+            console.log(JSON.parse(event['data']))
     }
 
 </script>
