@@ -147,14 +147,23 @@ class UpdateProfile(APIView):
 
     def post(self, *args, **kwargs):
         user = get_object_or_404(get_user_model(), id=self.kwargs.get("pk"))
+        self.check_object_permissions(self.request, user)
         serializer = ProfileSerializer(data=self.request.data)
-        serializer.is_valid(raise_exception=True)
 
         profile = Profile.objects.filter(user=user)
 
         if profile.exists():
             serializer = ProfileSerializer(instance=profile.first(), data=self.request.data)
-        serializer.save()
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=user)
+
+        full_name = self.request.data.get("full_name")
+
+        if full_name and user.full_name != full_name:
+            user.full_name = full_name
+            user.save()
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
