@@ -6,6 +6,7 @@ api_urlpatterns = [
     path("auth/", include("user.urls")),
     path("match/", include("match.urls")),
     path("chat/", include("chat.urls")),
+    path("payment/", include("payment.urls")),
 ]
 
 urlpatterns = [

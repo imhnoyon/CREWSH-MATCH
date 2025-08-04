@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 
 class Timestamp(models.Model):
@@ -30,4 +31,17 @@ class Ship(Timestamp):
 
     def __str__(self):
         return self.name
+
+
+class PrivateModeSubscription(Timestamp):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='private_mode', on_delete=models.CASCADE)
+    amount_paid = models.DecimalField(max_digits=4, decimal_places=2)
+    active = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.user
+
+
+
+
 

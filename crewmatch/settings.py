@@ -35,6 +35,8 @@ INSTALLED_APPS = [
     'user',
     'match',
     'chat',
+    'subscription',
+    'payment',
 ]
 
 MIDDLEWARE = [
