@@ -99,7 +99,6 @@ class AuthTokenSerializer(TokenObtainPairSerializer):
     # Override validate to return extra data in payload
     def validate(self, attrs):
         data = super().validate(attrs)
-
         refresh = self.get_token(self.user)
         access_token = refresh.access_token
 
@@ -111,7 +110,8 @@ class AuthTokenSerializer(TokenObtainPairSerializer):
             "refresh_token": str(refresh),
             "access_token_valid_till": exp_millis,
             "user_id": str(self.user.id),
-            "role": self.user.role
+            "role": self.user.role,
+            "profile": self.user.has_profile()
         }
 
 
@@ -319,6 +319,8 @@ class VerifyOptSerializerWithUserId(serializers.Serializer):
         self.otp.used = True
         self.otp.save()
 
+        profile = Profile.objects.filter(user=user)
+
         refresh = RefreshToken.for_user(user)
         access_token = refresh.access_token
         exp_timestamp = access_token['exp']  # seconds since epoch
@@ -327,8 +329,9 @@ class VerifyOptSerializerWithUserId(serializers.Serializer):
             "access_token": str(access_token),
             "refresh_token": str(refresh),
             "access_token_valid_till": exp_millis,
-            "uesr_id": user.id,
-            "role": user.role
+            "user_id": user.id,
+            "role": user.role,
+            "profile": profile.exists()
         }
         return response
 

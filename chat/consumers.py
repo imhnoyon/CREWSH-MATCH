@@ -17,21 +17,26 @@ class ChatConsumer(WebsocketConsumer):
         self.user = self.scope['user']
 
         if not self.user.is_authenticated:
-            self.close()
+            self.close(code=401, reason="Authentication Failed")
             
         self.inbox_id = self.scope["url_route"]["kwargs"]["inbox_id"]
+        self.room_group_name = f"chat_{self.inbox_id}"
 
         try:
             self.inbox = Inbox.objects.get(inbox_id=self.inbox_id)
         except Inbox.DoesNotExist:
             print("No such inbox_id")
-            self.close()
+            self.close(code=404, reason="Inbox id not valid")
 
-        self.room_group_name = f"chat_{self.inbox_id}"
+
         async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
+
         self.connect_user_to_inbox()
         # print(f"{self.user} is connected")
+
         self.accept()
+
+        self.send_data_on_open_close(is_online=True)
     
     def receive(self, text_data):
         payload = json.loads(text_data)
@@ -56,12 +61,28 @@ class ChatConsumer(WebsocketConsumer):
         self.inbox.online_users.add(self.user)
 
     def disconnect_user_from_inbox(self):
-        self.inbox.online_users.remove(self.user)
+        if self.user in self.inbox.online_users.all():
+            self.inbox.online_users.remove(self.user)
+
+    def send_data_on_open_close(self, is_online):
+        event = {
+            "type": "chat.presence",
+            "user": self.user.full_name,
+            "status": is_online,
+            "online_users_id": [ user.id for user in self.inbox.online_users.all()]
+        }
+        async_to_sync(self.channel_layer.group_send)(self.room_group_name, event)
+
+    def chat_presence(self, event):
+        self.send(text_data=json.dumps(event))
 
     def disconnect(self, code):
         self.disconnect_user_from_inbox()
         # print(f"{self.user} is disconnected")
+        self.send_data_on_open_close(is_online=False)
+        async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
         super().disconnect(code)
+
 
     def chat_message(self, event):
         self.send(text_data=json.dumps(event))

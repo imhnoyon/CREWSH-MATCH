@@ -55,6 +55,15 @@ class User(AbstractBaseUser, PermissionsMixin, Timestamp):
             photo = self.photo.url
         return photo
 
+    def get_profile(self):
+        try:
+            return self.profile
+        except Exception as e:
+            return False
+
+    def has_profile(self) -> bool:
+        return True if self.get_profile() else False
+
 
 class AccountVerificationOtp(OtpCode):
     user = models.OneToOneField(User, related_name='otp', on_delete=models.CASCADE)

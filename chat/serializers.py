@@ -57,8 +57,10 @@ class MessageSerializer(serializers.ModelSerializer):
         context = super().to_representation(instance)
         sender = instance.sender
         receiver = instance.receiver
-        context['sender'] = {"id": sender.id, "full_name": sender.full_name, "photo": sender.get_photo()}
-        context['receiver'] = {"id": receiver.id, "full_name": receiver.full_name, "photo": receiver.get_photo()}
+        sender_data = {"id": sender.id, "full_name": sender.full_name, "photo": sender.get_photo()}
+        receiver_data = {"id": receiver.id, "full_name": receiver.full_name, "photo": receiver.get_photo()}
+        context['sender'] = sender_data
+        context['receiver'] = receiver_data
         return context
 
     def save(self, **kwargs):
@@ -78,5 +80,5 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         fields = ("id", "inbox_id", "messages", )
 
     def get_messages(self, obj):
-        messages = obj.message_set.all().order_by("-id")
+        messages = obj.message_set.all()
         return  MessageSerializer(messages, many=True).data
