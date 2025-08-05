@@ -17,12 +17,13 @@ class Inbox(models.Model):
     Now one unfriends another, then we must keep their inbox/messages.
     So we will set unfriended = True in Match model, but we will be able to load all inboxes for the user
     as match_object is here that holds sender and receiver so we can just get inboxes
-    match_list = Match.objects.filter(Q(sender=user) | Q(receiver=user)).filter(unfriended=False, blocked=False).value_list("id", flat=True)
+    match_list = Match.objects.filter(Q(sender=user) | Q(receiver=user)).filter(unfriended=False).value_list("id", flat=True)
     inboxes = Inbox.objects.filter(match_object_id__in=match_list)
     """
     inbox_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     match = models.OneToOneField(Match, related_name='inbox', on_delete=models.CASCADE)
     online_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
+    blocked = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.inbox_id)

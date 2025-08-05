@@ -1,7 +1,9 @@
 from django.db.models import Q
+
+from rest_framework import status
 from rest_framework import generics
 from rest_framework import permissions
-
+from rest_framework.response import Response
 
 from .models import Inbox
 from match.models import Match
@@ -33,3 +35,19 @@ class ChatMessages(generics.RetrieveAPIView):
     queryset = Inbox.objects.all()
     lookup_url_kwarg = "inbox_id"
     lookup_field = "inbox_id"
+
+
+class Block(generics.UpdateAPIView):
+    permission_classes = [HasInboxAccess, ]
+    serializer_class = InboxSerializer
+    queryset = Inbox.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        inbox = self.get_object()
+        match = inbox.match
+        inbox.blocked = True
+        match.blocked = True
+        inbox.save()
+        match.save()
+        serializer = self.get_serializer(inbox)
+        return Response(serializer.data, status=status.HTTP_200_OK)

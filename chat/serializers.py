@@ -14,7 +14,7 @@ class InboxSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Inbox
-        fields = ("id", "inbox_id", "match",  "name", )
+        fields = ("id", "inbox_id", "match",  "name", "blocked", )
 
     def get_name(self, obj):
         match = obj.match
