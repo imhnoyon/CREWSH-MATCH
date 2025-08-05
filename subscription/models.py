@@ -1,18 +1,25 @@
 from django.db import models
 from django.conf import settings
 
+from core.models import Ship
 from core.models import Timestamp
 
 
 class Plan(Timestamp):
+    DURATION = (
+        ("WEEKLY", "WEEKLY"),
+        ("MONTHLY", "MONTHLY"),
+        ("YEARLY", "YEARLY")
+    )
+    ship = models.ForeignKey(Ship, related_name='plans', on_delete=models.CASCADE)
     name = models.CharField(max_length=150)
     price_id = models.CharField(max_length=150)
-    duration_text = models.CharField(max_length=250, help_text="1 Week, 1 Month, 1 Year")
-    display_price = models.CharField(max_length=250, help_text="9.99/month, 333.99/yearly")
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    duration = models.CharField(max_length=25, choices=list(DURATION))
     description = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.name} - {self.display_price}"
+        return f"{self.name} - {self.name}"
 
 
 class Subscription(Timestamp):

@@ -27,6 +27,7 @@ class Company(Timestamp):
 
 
 class Ship(Timestamp):
+    company = models.ForeignKey(Company, related_name='ships', on_delete=models.CASCADE)
     name = models.CharField(max_length=150, unique=True)
 
     def __str__(self):

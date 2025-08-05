@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'django_filters',
     'core',
     'user',
+    'authentication',
     'match',
     'chat',
     'subscription',
