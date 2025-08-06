@@ -28,14 +28,16 @@ class Subscription(Timestamp):
     active = models.BooleanField(default=True)
     subscription_id = models.CharField(max_length=150)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
+    expires_at = models.DateTimeField(null=True)
 
     def __str__(self):
         return f"{self.user} subscribed to {self.plan}"
 
 
+
 class PrivateMode(Timestamp):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='private_subscription', on_delete=models.CASCADE)
-    subscription_id = models.CharField(max_length=150)
+    payment_intent_id = models.CharField(max_length=150)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):

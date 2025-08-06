@@ -41,6 +41,7 @@ node_modules/
 # Static files (if collected using collectstatic)
 staticfiles/
 static/
+todo.txt
 
 # Media files (user uploads)
 media/

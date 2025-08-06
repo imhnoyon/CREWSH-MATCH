@@ -16,12 +16,13 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
     user_id = serializers.IntegerField(source='id', read_only=True)
+    role = serializers.CharField(read_only=True)
 
     class Meta:
         model = User
         fields = (
-            "id", "user_id", "full_name", "email_address", "password", "password2", "photo",
-            "is_active", "is_subscribed", "is_private", "is_banned",
+            "user_id", "full_name", "email_address", "password", "password2", "photo",
+            "is_active", "is_subscribed", "is_private", "role",
             "created_at",
         )
 

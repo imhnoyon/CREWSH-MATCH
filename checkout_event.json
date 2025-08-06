@@ -1,132 +1,176 @@
 {
-    "id": "evt_1RszeuKOgqVegdKnOiOUcpMM",
-    "object": "event",
-    "api_version": "2022-08-01",
-    "created": 1754457184,
-    "data": {
-        "object": {
-            "id": "cs_test_a1x5rV8RnWXVVIUYhvixmzf7xtja71srRrhxa8BOYixKC8IMB1fuD2iiu5",
-            "object": "checkout.session",
-            "adaptive_pricing": {
-                "enabled": true
-            },
-            "after_expiration": null,
-            "allow_promotion_codes": null,
-            "amount_subtotal": 100,
-            "amount_total": 100,
-            "automatic_tax": {
-                "enabled": false,
-                "liability": null,
-                "provider": null,
-                "status": null
-            },
-            "billing_address_collection": null,
-            "cancel_url": "http://localhost:8001/api/subscription/cancel/",
-            "client_reference_id": null,
-            "client_secret": null,
-            "collected_information": {
-                "shipping_details": null
-            },
-            "consent": null,
-            "consent_collection": null,
-            "created": 1754457151,
-            "currency": "usd",
-            "currency_conversion": null,
-            "custom_fields": [],
-            "custom_text": {
-                "after_submit": null,
-                "shipping_address": null,
-                "submit": null,
-                "terms_of_service_acceptance": null
-            },
-            "customer": null,
-            "customer_creation": "if_required",
-            "customer_details": {
-                "address": {
-                    "city": null,
-                    "country": "BD",
-                    "line1": null,
-                    "line2": null,
-                    "postal_code": null,
-                    "state": null
-                },
-                "email": "admin@gmail.com",
-                "name": "Nabil",
-                "phone": null,
-                "tax_exempt": "none",
-                "tax_ids": []
-            },
-            "customer_email": "admin@gmail.com",
-            "discounts": [],
-            "expires_at": 1754543551,
-            "invoice": null,
-            "invoice_creation": {
-                "enabled": false,
-                "invoice_data": {
-                    "account_tax_ids": null,
-                    "custom_fields": null,
-                    "description": null,
-                    "footer": null,
-                    "issuer": null,
-                    "metadata": {},
-                    "rendering_options": null
-                }
-            },
-            "livemode": false,
-            "locale": null,
-            "metadata": {
-                "user_id": "1"
-            },
-            "mode": "payment",
-            "origin_context": null,
-            "payment_intent": "pi_3RszetKOgqVegdKn1elZZWgG",
-            "payment_link": null,
-            "payment_method_collection": "if_required",
-            "payment_method_configuration_details": {
-                "id": "pmc_1ReJqNKOgqVegdKn7WwILZZX",
-                "parent": null
-            },
-            "payment_method_options": {
-                "card": {
-                    "request_three_d_secure": "automatic"
-                }
-            },
-            "payment_method_types": [
-                "card",
-                "link",
-                "cashapp"
-            ],
-            "payment_status": "paid",
-            "permissions": null,
-            "phone_number_collection": {
-                "enabled": false
-            },
-            "recovered_from": null,
-            "saved_payment_method_options": null,
-            "setup_intent": null,
-            "shipping_address_collection": null,
-            "shipping_cost": null,
-            "shipping_details": null,
-            "shipping_options": [],
-            "status": "complete",
-            "submit_type": null,
-            "subscription": null,
-            "success_url": "http://localhost:8001/api/subscription/success/",
-            "total_details": {
-                "amount_discount": 0,
-                "amount_shipping": 0,
-                "amount_tax": 0
-            },
-            "ui_mode": "hosted",
-            "url": null,
-            "wallet_options": null
+    "id": "sub_1Rt5l1KOgqVegdKn2Gw6aSpr",
+    "object": "subscription",
+    "application": null,
+    "application_fee_percent": null,
+    "automatic_tax": {
+        "disabled_reason": null,
+        "enabled": false,
+        "liability": null
+    },
+    "billing_cycle_anchor": 1754480625,
+    "billing_cycle_anchor_config": null,
+    "billing_mode": {
+        "type": "classic"
+    },
+    "billing_thresholds": null,
+    "cancel_at": null,
+    "cancel_at_period_end": false,
+    "canceled_at": null,
+    "cancellation_details": {
+        "comment": null,
+        "feedback": null,
+        "reason": null
+    },
+    "collection_method": "charge_automatically",
+    "created": 1754480625,
+    "currency": "usd",
+    "customer": "cus_SojDR5RIjWQlKl",
+    "days_until_due": null,
+    "default_payment_method": "pm_1Rt5kzKOgqVegdKnbzNo5azD",
+    "default_source": null,
+    "default_tax_rates": [],
+    "description": null,
+    "discounts": [],
+    "ended_at": null,
+    "invoice_settings": {
+        "account_tax_ids": null,
+        "issuer": {
+            "type": "self"
         }
     },
-    "livemode": false,
-    "pending_webhooks": 2,
-    "request": {
-        "id": null,
-        "idempotency_key": null
+    "items": {
+        "object": "list",
+        "data": [
+            {
+                "id": "si_SojD2DKI7UxoBH",
+                "object": "subscription_item",
+                "billing_thresholds": null,
+                "created": 1754480626,
+                "current_period_end": 1757159025,
+                "current_period_start": 1754480625,
+                "discounts": [],
+                "metadata": {},
+                "plan": {
+                    "id": "price_1RsdAzKOgqVegdKn4c8IZuki",
+                    "object": "plan",
+                    "active": true,
+                    "amount": 2000,
+                    "amount_decimal": "2000",
+                    "billing_scheme": "per_unit",
+                    "created": 1754370761,
+                    "currency": "usd",
+                    "interval": "month",
+                    "interval_count": 1,
+                    "livemode": false,
+                    "metadata": {},
+                    "meter": null,
+                    "nickname": null,
+                    "product": "prod_SoFgcbPVOQHQd4",
+                    "tiers_mode": null,
+                    "transform_usage": null,
+                    "trial_period_days": null,
+                    "usage_type": "licensed"
+                },
+                "price": {
+                    "id": "price_1RsdAzKOgqVegdKn4c8IZuki",
+                    "object": "price",
+                    "active": true,
+                    "billing_scheme": "per_unit",
+                    "created": 1754370761,
+                    "currency": "usd",
+                    "custom_unit_amount": null,
+                    "livemode": false,
+                    "lookup_key": null,
+                    "metadata": {},
+                    "nickname": null,
+                    "product": "prod_SoFgcbPVOQHQd4",
+                    "recurring": {
+                        "interval": "month",
+                        "interval_count": 1,
+                        "meter": null,
+                        "trial_period_days": null,
+                        "usage_type": "licensed"
+                    },
+                    "tax_behavior": "unspecified",
+                    "tiers_mode": null,
+                    "transform_quantity": null,
+                    "type": "recurring",
+                    "unit_amount": 2000,
+                    "unit_amount_decimal": "2000"
+                },
+                "quantity": 1,
+                "subscription": "sub_1Rt5l1KOgqVegdKn2Gw6aSpr",
+                "tax_rates": []
+            }
+        ],
+        "has_more": false,
+        "total_count": 1,
+        "url": "/v1/subscription_items?subscription=sub_1Rt5l1KOgqVegdKn2Gw6aSpr"
     },
-    "type": "checkout.session.completed"
+    "latest_invoice": "in_1Rt5l0KOgqVegdKnTXDjY1rp",
+    "livemode": false,
+    "metadata": {
+        "plan_id": "1",
+        "price_id": "price_1RsdAzKOgqVegdKn4c8IZuki",
+        "user_id": "1"
+    },
+    "next_pending_invoice_item_invoice": null,
+    "on_behalf_of": null,
+    "pause_collection": null,
+    "payment_settings": {
+        "payment_method_options": {
+            "acss_debit": null,
+            "bancontact": null,
+            "card": {
+                "network": null,
+                "request_three_d_secure": "automatic"
+            },
+            "customer_balance": null,
+            "konbini": null,
+            "sepa_debit": null,
+            "us_bank_account": null
+        },
+        "payment_method_types": [
+            "card"
+        ],
+        "save_default_payment_method": "off"
+    },
+    "pending_invoice_item_interval": null,
+    "pending_setup_intent": null,
+    "pending_update": null,
+    "plan": {
+        "id": "price_1RsdAzKOgqVegdKn4c8IZuki",
+        "object": "plan",
+        "active": true,
+        "amount": 2000,
+        "amount_decimal": "2000",
+        "billing_scheme": "per_unit",
+        "created": 1754370761,
+        "currency": "usd",
+        "interval": "month",
+        "interval_count": 1,
+        "livemode": false,
+        "metadata": {},
+        "meter": null,
+        "nickname": null,
+        "product": "prod_SoFgcbPVOQHQd4",
+        "tiers_mode": null,
+        "transform_usage": null,
+        "trial_period_days": null,
+        "usage_type": "licensed"
+    },
+    "quantity": 1,
+    "schedule": null,
+    "start_date": 1754480625,
+    "status": "active",
+    "test_clock": null,
+    "transfer_data": null,
+    "trial_end": null,
+    "trial_settings": {
+        "end_behavior": {
+            "missing_payment_method": "create_invoice"
+        }
+    },
+    "trial_start": null
 }

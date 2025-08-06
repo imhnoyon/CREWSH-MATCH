@@ -30,12 +30,6 @@ class RetrieveProfile(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     queryset = get_user_model().objects.all()
 
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        profile = instance.profile
-        serializer = ProfileSerializer(profile)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 class UpdateProfile(APIView):
     permission_classes = [AccountOwner, ]
@@ -60,7 +54,9 @@ class UpdateProfile(APIView):
             user.full_name = full_name
             user.save()
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        user_serializer = UserSerializer(user)
+
+        return Response(user_serializer.data, status=status.HTTP_201_CREATED)
 
 
 class UploadPhotos(APIView):

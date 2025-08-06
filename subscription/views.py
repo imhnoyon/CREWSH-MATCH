@@ -1,5 +1,6 @@
 import json
 import stripe
+import datetime
 from decimal import Decimal
 
 from django.conf import settings
@@ -100,7 +101,7 @@ class Webhook(generic.View):
         amount = Decimal(str(session_data['amount_total'] / 100))
 
         try:
-            subscription = PrivateMode.objects.create(user=user, subscription_id=session_data['id'], amount_paid=amount)
+            subscription = PrivateMode.objects.create(user=user, payment_intent_id=session_data['payment_intent'], amount_paid=amount)
             user.is_private = True
             user.save()
             return subscription
@@ -109,19 +110,30 @@ class Webhook(generic.View):
             print(str(e))
 
     def handle_subscription_payment(self, session_data):
-        metadata = session_data['metadata']
+
+        subscription_id = session_data['subscription']
+        subscription_object = stripe.Subscription.retrieve(subscription_id)
+        subscription_data = subscription_object['items']['data'][0]
+
+        with open("subscription_plan_object.json", "w") as file:
+            json.dump(subscription_object, file, indent=4)
+
+        metadata = subscription_object['metadata']
         user_id = metadata['user_id']
         plan_id = metadata['plan_id']
-        subscription_id = session_data['id']
         user = get_user_model().objects.get(id=int(user_id))
         plan = Plan.objects.get(id=plan_id)
+        created_at = datetime.datetime.fromtimestamp(subscription_data["current_period_start"], tz=datetime.timezone.utc)
+        expires_at = datetime.datetime.fromtimestamp(subscription_data["current_period_end"], tz=datetime.timezone.utc)
 
         subscription = Subscription.objects.create(
             user=user,
             plan=plan,
             active=True,
             subscription_id=subscription_id,
-            amount_paid=plan.amount
+            amount_paid=plan.amount,
+            created_at=created_at,
+            expires_at=expires_at
 
         )
 
@@ -153,9 +165,6 @@ class Webhook(generic.View):
 
         # Handle the event
         if event and event['type'] == 'checkout.session.completed':
-
-            with open("checkout_event.json", "w") as file:
-                json.dump(event, file, indent=4)
 
             session = event['data']['object']  # contains a stripe.PaymentIntent
             # Then define and call a method to handle the successful payment intent.
