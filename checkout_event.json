@@ -1,17 +1,19 @@
 {
-    "id": "evt_1Rsi1GKOgqVegdKnPRxVb7ok",
+    "id": "evt_1RszeuKOgqVegdKnOiOUcpMM",
     "object": "event",
     "api_version": "2022-08-01",
-    "created": 1754389378,
+    "created": 1754457184,
     "data": {
         "object": {
-            "id": "cs_test_a1EJ7fohd4ltJGWqHHSyj2lR6JqZZLQtXLOwl52ykzuZ9L3l61fKTiP7IR",
+            "id": "cs_test_a1x5rV8RnWXVVIUYhvixmzf7xtja71srRrhxa8BOYixKC8IMB1fuD2iiu5",
             "object": "checkout.session",
-            "adaptive_pricing": null,
+            "adaptive_pricing": {
+                "enabled": true
+            },
             "after_expiration": null,
             "allow_promotion_codes": null,
-            "amount_subtotal": 2000,
-            "amount_total": 2000,
+            "amount_subtotal": 100,
+            "amount_total": 100,
             "automatic_tax": {
                 "enabled": false,
                 "liability": null,
@@ -19,7 +21,7 @@
                 "status": null
             },
             "billing_address_collection": null,
-            "cancel_url": "http://localhost:8000/payment/cancel/",
+            "cancel_url": "http://localhost:8001/api/subscription/cancel/",
             "client_reference_id": null,
             "client_secret": null,
             "collected_information": {
@@ -27,7 +29,7 @@
             },
             "consent": null,
             "consent_collection": null,
-            "created": 1754389343,
+            "created": 1754457151,
             "currency": "usd",
             "currency_conversion": null,
             "custom_fields": [],
@@ -37,8 +39,8 @@
                 "submit": null,
                 "terms_of_service_acceptance": null
             },
-            "customer": "cus_SoKgJZ7SIdVXnL",
-            "customer_creation": "always",
+            "customer": null,
+            "customer_creation": "if_required",
             "customer_details": {
                 "address": {
                     "city": null,
@@ -56,29 +58,43 @@
             },
             "customer_email": "admin@gmail.com",
             "discounts": [],
-            "expires_at": 1754475742,
-            "invoice": "in_1Rsi1CKOgqVegdKnYmWB7SlU",
-            "invoice_creation": null,
+            "expires_at": 1754543551,
+            "invoice": null,
+            "invoice_creation": {
+                "enabled": false,
+                "invoice_data": {
+                    "account_tax_ids": null,
+                    "custom_fields": null,
+                    "description": null,
+                    "footer": null,
+                    "issuer": null,
+                    "metadata": {},
+                    "rendering_options": null
+                }
+            },
             "livemode": false,
             "locale": null,
             "metadata": {
-                "plan_id": "1",
-                "user_id": "1",
-                "price_id": "price_1RsdAzKOgqVegdKn4c8IZuki"
+                "user_id": "1"
             },
-            "mode": "subscription",
+            "mode": "payment",
             "origin_context": null,
-            "payment_intent": null,
+            "payment_intent": "pi_3RszetKOgqVegdKn1elZZWgG",
             "payment_link": null,
-            "payment_method_collection": "always",
-            "payment_method_configuration_details": null,
+            "payment_method_collection": "if_required",
+            "payment_method_configuration_details": {
+                "id": "pmc_1ReJqNKOgqVegdKn7WwILZZX",
+                "parent": null
+            },
             "payment_method_options": {
                 "card": {
                     "request_three_d_secure": "automatic"
                 }
             },
             "payment_method_types": [
-                "card"
+                "card",
+                "link",
+                "cashapp"
             ],
             "payment_status": "paid",
             "permissions": null,
@@ -86,13 +102,7 @@
                 "enabled": false
             },
             "recovered_from": null,
-            "saved_payment_method_options": {
-                "allow_redisplay_filters": [
-                    "always"
-                ],
-                "payment_method_remove": "disabled",
-                "payment_method_save": null
-            },
+            "saved_payment_method_options": null,
             "setup_intent": null,
             "shipping_address_collection": null,
             "shipping_cost": null,
@@ -100,8 +110,8 @@
             "shipping_options": [],
             "status": "complete",
             "submit_type": null,
-            "subscription": "sub_1Rsi1EKOgqVegdKnn1uTS6Wc",
-            "success_url": "http://localhost:8000/payment/success/",
+            "subscription": null,
+            "success_url": "http://localhost:8001/api/subscription/success/",
             "total_details": {
                 "amount_discount": 0,
                 "amount_shipping": 0,

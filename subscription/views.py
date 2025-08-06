@@ -1,5 +1,7 @@
 import json
 import stripe
+from decimal import Decimal
+
 from django.conf import settings
 from django.views import generic
 from django.contrib.auth import get_user_model
@@ -14,7 +16,7 @@ from rest_framework.response import  Response
 
 from user.permissions import ProfileRequired
 
-from .models import Plan, Subscription
+from .models import Plan, Subscription, PrivateMode
 
 from .serializers import (
     PlanSerializer,
@@ -46,6 +48,40 @@ class CreateCheckoutSession(APIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
 
+class CreateCheckoutSessionForPrivateMode(APIView):
+    permission_classes = [ProfileRequired, ]
+
+    def post(self, *args, **kwargs):
+        if self.request.user.is_private:
+            return Response({"message": "User is already private"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            session = stripe.checkout.Session.create(
+                line_items=[{
+                    'price_data': {
+                        'currency': 'usd',
+                        'product_data': {
+                            'name': "Crew Match Private Mode Subscription",
+                        },
+                        'unit_amount': 1 * 100,
+                    },
+                    'quantity': 1,
+                }],
+                mode='payment',
+                success_url=settings.STRIPE_SUCCESS_URL,
+                cancel_url=settings.STRIPE_CANCEL_URL,
+                customer_email=self.request.user.email_address,
+                metadata={
+                    'user_id': str(self.request.user.id),
+                }
+            )
+        except Exception as e:
+            print(str(e))
+            return Response({"message": "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"url": session['url']}, status=status.HTTP_201_CREATED)
+
+
 class PaymentSuccessView(generic.View):
     def get(self, *args, **kwargs):
         return HttpResponse("Payment is successful")
@@ -58,7 +94,21 @@ class PaymentCancelView(generic.View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class Webhook(generic.View):
-    def handle_payment(self, session_data):
+    def handle_one_time_payment(self, session_data):
+        metadata = session_data['metadata']
+        user = get_user_model().objects.get(id=int(metadata['user_id']))
+        amount = Decimal(str(session_data['amount_total'] / 100))
+
+        try:
+            subscription = PrivateMode.objects.create(user=user, subscription_id=session_data['id'], amount_paid=amount)
+            user.is_private = True
+            user.save()
+            return subscription
+
+        except Exception as e:
+            print(str(e))
+
+    def handle_subscription_payment(self, session_data):
         metadata = session_data['metadata']
         user_id = metadata['user_id']
         plan_id = metadata['plan_id']
@@ -109,8 +159,12 @@ class Webhook(generic.View):
 
             session = event['data']['object']  # contains a stripe.PaymentIntent
             # Then define and call a method to handle the successful payment intent.
+            mode = session['mode']
 
-            self.handle_payment(session)
+            if mode == "subscription":
+                self.handle_subscription_payment(session)
+            elif mode == "payment":
+                self.handle_one_time_payment(session)
 
         else:
             # Unexpected event type

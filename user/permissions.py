@@ -16,5 +16,9 @@ class ProfileOwner(BasePermission):
 class ProfileRequired(BasePermission):
     message = "Please create your profile first"
     def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+
         profile = Profile.objects.filter(user=request.user)
+
         return bool(request.user.is_authenticated and profile.exists())
