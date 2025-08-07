@@ -25,19 +25,21 @@ class UpdateUser(generics.UpdateAPIView):
     queryset = get_user_model().objects.all()
 
 
-class RetrieveProfile(generics.RetrieveUpdateAPIView):
-    permission_classes = [ProfileRequired, AccountOwner, ]
+class RetrieveProfile(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated, ProfileRequired]
     serializer_class = UserSerializer
-    queryset = get_user_model().objects.all()
+
+    def get(self, *args, **kwargs):
+        serializer = UserSerializer(self.request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class UpdateProfile(APIView):
-    permission_classes = [AccountOwner, ]
+    permission_classes = [permissions.IsAuthenticated, ]
     serializer_class = UserSerializer
 
     def post(self, *args, **kwargs):
-        user = get_object_or_404(get_user_model(), id=self.kwargs.get("pk"))
-        self.check_object_permissions(self.request, user)
+        user = self.request.user
         serializer = ProfileSerializer(data=self.request.data)
 
         profile = Profile.objects.filter(user=user)

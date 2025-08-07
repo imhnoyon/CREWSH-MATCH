@@ -1,5 +1,4 @@
 from django.db import models
-from django.conf import settings
 
 
 class Timestamp(models.Model):
@@ -28,13 +27,17 @@ class Company(Timestamp):
 
 class Ship(Timestamp):
     company = models.ForeignKey(Company, related_name='ships', on_delete=models.CASCADE)
-    name = models.CharField(max_length=150, unique=True)
+    name = models.CharField(max_length=150)
+
+    class Meta:
+        unique_together = ("company", "name", )
 
     def __str__(self):
         return self.name
 
 
+class Settings(Timestamp):
+    terms_and_conditions = models.TextField()
 
-
-
-
+    def __str__(self):
+        return str(self.terms_and_conditions)

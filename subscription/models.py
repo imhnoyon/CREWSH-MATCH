@@ -19,7 +19,7 @@ class Plan(Timestamp):
     description = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.name} - {self.name}"
+        return f"{self.name}"
 
 
 class Subscription(Timestamp):
@@ -42,5 +42,3 @@ class PrivateMode(Timestamp):
 
     def __str__(self):
         return self.user.full_name
-
-

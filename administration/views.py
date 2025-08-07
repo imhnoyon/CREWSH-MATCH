@@ -4,6 +4,12 @@ from rest_framework import status
 from rest_framework import generics
 from rest_framework import permissions
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+
+from core.models import Company, Ship, Announcement, Settings
+from core.serializers import (
+    CompanySerializer, ShipSerializer, AnnouncementSerializer, SettingsSerializer
+)
 
 from user.models import Profile
 from user.serializers import ProfileSerializer
@@ -26,7 +32,7 @@ class ListUser(generics.ListAPIView):
         return get_user_model().objects.order_by("-id").exclude(id=self.request.user.id)
 
 
-class RetrieveUpdateDelete(generics.RetrieveUpdateDestroyAPIView):
+class RetrieveUpdateDeleteUser(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAdminUser, ]
     serializer_class = AdminUserSerializer
     queryset = get_user_model().objects.all()
@@ -69,3 +75,71 @@ class ListSubscription(generics.ListAPIView):
     permission_classes = [permissions.IsAdminUser, ]
     serializer_class = SubscriptionSerializer
     queryset = Subscription.objects.order_by("-id")
+
+
+class ListCreateCompany(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAdminUser, ]
+    serializer_class = CompanySerializer
+    queryset = Company.objects.all()
+
+
+class RetrieveDeleteCompany(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAdminUser, ]
+    serializer_class = CompanySerializer
+    queryset = Company.objects.all()
+
+
+class ListCreateShip(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAdminUser, ]
+    serializer_class = ShipSerializer
+    queryset = Ship.objects.all()
+
+
+class RetrieveUpdateDeleteShip(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAdminUser, ]
+    serializer_class = ShipSerializer
+    queryset = Ship.objects.all()
+
+
+class CreateAnnounceMent(generics.CreateAPIView):
+    permission_classes = [permissions.IsAdminUser, ]
+    parser_classes = [MultiPartParser, FormParser, ]
+    serializer_class = AnnouncementSerializer
+    queryset = Announcement.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        Announcement.objects.all().delete()
+        return super().create(request, *args, **kwargs)
+
+
+class UpdateAccount(generics.GenericAPIView):
+    permission_classes = [permissions.IsAdminUser, ]
+    serializer_class = AdminUserSerializer
+    parser_classes = [MultiPartParser, FormParser, JSONParser, ]
+
+    def post(self, *args, **kwargs):
+        user = self.request.user
+        serializer = self.get_serializer(user, data=self.request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class SiteSettings(generics.GenericAPIView):
+    permission_classes = [permissions.IsAdminUser, ]
+    serializer_class = SettingsSerializer
+
+    def get_object(self):
+        return Settings.objects.first()
+
+    def get(self, *args, **kwargs):
+        instance = self.get_object()
+        serializer = SettingsSerializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, *args, **kwargs):
+        instance = self.get_object()
+        serializer = SettingsSerializer(instance, data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)

@@ -44,18 +44,14 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-    def update(self, instance, validated_data):
-        self.validated_data.pop("password2", None)
-        password = self.validated_data.pop("password", None)
-
-        for attr, value in self.validated_data.items():
-            setattr(instance, attr, value)
-
-        if password:
-            instance.set_password(password)
-
-        instance.save()
-        return instance
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        profile = instance.get_profile()
+        response['profile'] = profile
+        if profile:
+            response['profile'] = ProfileSerializer(profile).data
+            response['profile'].pop("user")
+        return response
 
 
 class ProfileSerializer(serializers.ModelSerializer):
