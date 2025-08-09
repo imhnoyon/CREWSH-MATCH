@@ -11,7 +11,8 @@ from .views import (
     RetrieveUpdateDeleteShip,
     CreateAnnounceMent,
     UpdateAccount,
-    SiteSettings
+    SiteSettings,
+    Dashboard
 )
 
 
@@ -27,4 +28,5 @@ urlpatterns = [
     path("announcement/create/", CreateAnnounceMent.as_view(), name='create-announcement'),
     path("account/update/", UpdateAccount.as_view(), name='update-account'),
     path("site/settings/", SiteSettings.as_view(), name="site-settings"),
+    path("dashboard/analytics/", Dashboard.as_view(), name='dashboard-analytics'),
 ]

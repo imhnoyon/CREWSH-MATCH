@@ -38,3 +38,24 @@ class Match(models.Model):
     def __str__(self):
         return f"{self.sender.full_name} matched with {self.receiver.full_name}"
 
+
+class Notification(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='notifications', on_delete=models.CASCADE)
+    match = models.ForeignKey(Match, on_delete=models.CASCADE)
+    seen = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-id']
+
+    def __str__(self):
+        return f"{self.user.full_name} got a match"
+
+
+class Unliked(models.Model):
+    by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='unliked_users', on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='is_unliked', on_delete=models.CASCADE)
+    last_timestamp = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.by.full_name} unliked {self.user.full_name}"

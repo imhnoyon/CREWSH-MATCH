@@ -1,13 +1,27 @@
+from datetime import timedelta
+from django.utils import timezone
+
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
 
 from rest_framework import status
 from rest_framework import generics
+from rest_framework.views import APIView
 from rest_framework import permissions
+
 from rest_framework.response import Response
 
-from .models import Request, Match
+from user.models import Profile
+
+from .models import Request, Match, Notification, Unliked
+
 from .permissions import IsRequestReceiver
-from .serializers import RequestSerializer, MatchSerializer
+from .serializers import (
+    RequestSerializer, MatchSerializer,
+    MatchProfileSerializer, NotificationSerializer,
+    UnlikeSerializer
+)
 
 
 class SendRequest(generics.CreateAPIView):
@@ -36,6 +50,17 @@ class AcceptRequest(generics.UpdateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+class Unlike(APIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    def post(self, *args, **kwargs):
+        user_id = self.kwargs.get("user_id")
+        unliked_user = get_object_or_404(get_user_model(), id=user_id)
+        unlike, _ = Unliked.objects.get_or_create(by=self.request.user, user=unliked_user)
+        serializer = UnlikeSerializer(unlike)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
 class ListRequests(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
     serializer_class = RequestSerializer
@@ -54,3 +79,45 @@ class ListMatches(generics.ListAPIView):
         user = self.request.user
         match_list = Match.objects.filter(Q(sender=user) | Q(receiver=user)).filter(unfriended=False, blocked=False)
         return match_list
+
+
+class ListMatchedProfile(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+    serializer_class = MatchProfileSerializer
+
+    def get_queryset(self):
+        response = []
+        profile = self.request.user.get_profile()
+        two_days_ago = timezone.now() - timedelta(days=2)
+        recent_unliked = Unliked.objects.filter(last_timestamp__gte=two_days_ago, by=self.request.user).values_list("user", flat=True)
+
+        if profile:
+            gender_preference = profile.gender_preference
+            age_from = profile.age_from
+            age_to = profile.age_to
+            banned_countries = profile.banned_countries
+            country = profile.country
+            company = profile.company
+            ship = profile.ship
+            matched_profile = Profile.objects.filter(
+                gender=gender_preference,
+                age_from=age_from,
+                age_to=age_to
+            ).exclude(country__in=banned_countries).exclude(user=self.request.user)
+
+            return matched_profile
+
+        return response
+
+
+class ListNotification(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+    serializer_class = NotificationSerializer
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user)

@@ -1,8 +1,10 @@
+from django.db.models import Sum
 from django.contrib.auth import get_user_model
 
 from rest_framework import status
 from rest_framework import generics
 from rest_framework import permissions
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
@@ -13,6 +15,8 @@ from core.serializers import (
 
 from user.models import Profile
 from user.serializers import ProfileSerializer
+
+from match.models import Match
 
 from subscription.models import PrivateMode, Subscription
 from subscription.serializers import (
@@ -143,3 +147,38 @@ class SiteSettings(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class Dashboard(APIView):
+    permission_classes = [permissions.IsAdminUser, ]
+
+    def get(self, *args, **kwargs):
+        users = get_user_model().objects.all()
+        matches = Match.objects.all()
+        subscriptions = Subscription.objects.all()
+        private_modes = PrivateMode.objects.all()
+        subscription_earning = subscriptions.aggregate(Sum("amount_paid"))
+        private_mode_earning = private_modes.aggregate(Sum("amount_paid"))
+        sb_earn = subscription_earning['amount_paid__sum'] if subscription_earning['amount_paid__sum'] else 0
+        prm_earn = private_mode_earning['amount_paid__sum'] if private_mode_earning['amount_paid__sum'] else 0
+        profiles = Profile.objects.all()
+        profile_count = profiles.count()
+        males = profiles.filter(gender="MALE")
+        females = profiles.filter(gender="FEMALE")
+        print(("males", males.count()))
+        print(("females", females.count()))
+
+        data = {
+            "user_count": users.count(),
+            "match_count": matches.count(),
+            "subscription_count": subscriptions.count(),
+            "total_earning": sb_earn + prm_earn,
+            "user_list": AdminUserSerializer(users.exclude(id=self.request.user.id), many=True).data,
+            "gender_data": {
+                "male_percentage": (males.count() / profile_count) * 100,
+                "female_percentage": (females.count()/ profile_count) * 100
+            }
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
+
