@@ -5,7 +5,8 @@ from .views import (
     RetrieveProfile,
     UpdateProfile,
     UploadPhotos,
-    UpdatePhotos
+    UpdatePhotos,
+    UploadProfilePhoto
 )
 
 
@@ -18,4 +19,5 @@ urlpatterns = [
     path("update-profile/", UpdateProfile.as_view(), name='update-profile'),
     path("upload-photos/", UploadPhotos.as_view(), name='upload-photos'),
     path("update-photos/", UpdatePhotos.as_view(), name='update-photos'),
+    path("upload-profile-photo/", UploadProfilePhoto.as_view(), name='upload-profile-photo'),
 ]

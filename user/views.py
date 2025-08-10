@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
 
 from rest_framework import status
 from rest_framework import generics
@@ -69,7 +68,7 @@ class UploadPhotos(APIView):
         serializer = MultipleImageUploadSerializer(data=self.request.data, context={"request": self.request})
         serializer.is_valid(raise_exception=True)
         images = serializer.save()
-        photos = ImageSerializer(images, many=True)
+        photos = ImageSerializer(images, many=True, context={"request": self.request})
         return Response(photos.data, status=status.HTTP_201_CREATED)
 
 
@@ -81,5 +80,20 @@ class UpdatePhotos(APIView):
         serializer = UpdatePhotosSerializer(data=self.request.data, context={"request": self.request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        photos = ImageSerializer(self.request.user.images.all(), many=True)
+        photos = ImageSerializer(self.request.user.images.all(), many=True, context={"request": self.request})
         return Response(photos.data, status=status.HTTP_201_CREATED)
+
+
+class UploadProfilePhoto(APIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser, ]
+
+    def post(self, *args, **kwargs):
+        photo = self.request.FILES.get("photo", None)
+        user = self.request.user
+
+        if photo:
+            user.photo = photo
+            user.save()
+
+        return Response({"photo": self.request.build_absolute_uri(user.photo.url)}, status=status.HTTP_201_CREATED)

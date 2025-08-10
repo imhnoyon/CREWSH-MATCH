@@ -68,9 +68,17 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class ImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField(method_name="get_photo", read_only=True)
+
     class Meta:
         model = Image
         fields = ("id", "user", "image", )
+
+    def get_photo(self, obj):
+        request = self.context.get("request")
+        if obj.image and hasattr(obj.image, "url"):
+            return request.build_absolute_uri(obj.image.url)
+        return None
 
 
 class ImageUploadSerializer(serializers.ModelSerializer):
