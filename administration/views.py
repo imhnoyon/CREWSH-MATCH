@@ -18,9 +18,9 @@ from user.serializers import ProfileSerializer
 
 from match.models import Match
 
-from subscription.models import PrivateMode, Subscription
+from subscription.models import PrivateMode, Subscription, Plan
 from subscription.serializers import (
-    PrivateModeSerializer, SubscriptionSerializer
+    PrivateModeSerializer, SubscriptionSerializer, PlanSerializer
 )
 
 from .serializers import (
@@ -73,6 +73,12 @@ class ListPrivateMode(generics.ListAPIView):
     permission_classes = [permissions.IsAdminUser, ]
     serializer_class = PrivateModeSerializer
     queryset = PrivateMode.objects.order_by("-id")
+
+
+class ListCreatePlan(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAdminUser, ]
+    serializer_class = PlanSerializer
+    queryset = Plan.objects.all()
 
 
 class ListSubscription(generics.ListAPIView):
@@ -165,8 +171,6 @@ class Dashboard(APIView):
         profile_count = profiles.count()
         males = profiles.filter(gender="MALE")
         females = profiles.filter(gender="FEMALE")
-        print(("males", males.count()))
-        print(("females", females.count()))
 
         data = {
             "user_count": users.count(),

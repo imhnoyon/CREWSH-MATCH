@@ -21,6 +21,12 @@ class PlanSerializer(serializers.ModelSerializer):
             "description",
         )
 
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        ship = instance.ship
+        response['ship'] = {"id": ship.id, "name": ship.name}
+        return response
+
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
