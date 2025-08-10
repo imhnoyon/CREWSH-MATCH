@@ -103,7 +103,7 @@ class ListMatchedProfile(generics.ListAPIView):
                 gender=gender_preference,
                 age_from=age_from,
                 age_to=age_to
-            ).exclude(country__in=banned_countries).exclude(user=self.request.user)
+            ).exclude(country__in=banned_countries).exclude(user=self.request.user).exclude(user__id__in=recent_unliked)
 
             return matched_profile
 
