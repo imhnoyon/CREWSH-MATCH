@@ -5,7 +5,7 @@ from rest_framework import generics
 from rest_framework import permissions
 from rest_framework.response import Response
 
-from .models import Inbox
+from .models import Inbox, Message
 from match.models import Match
 from .permissions import HasInboxAccess
 from .serializers import (
@@ -35,6 +35,11 @@ class ChatMessages(generics.RetrieveAPIView):
     queryset = Inbox.objects.all()
     lookup_url_kwarg = "inbox_id"
     lookup_field = "inbox_id"
+
+    def retrieve(self, request, *args, **kwargs):
+        unread_messages = Message.objects.filter(inbox=self.get_object(), receiver=self.request.user, seen=False)
+        unread_messages.update(seen=True)
+        return super().retrieve(request, *args, **kwargs)
 
 
 class Block(generics.UpdateAPIView):

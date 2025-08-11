@@ -29,11 +29,15 @@ class InboxSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         response = super().to_representation(instance)
+        request = self.context.get("request")
+        user = request.user
         response['last_message'] = None
         messages = Message.objects.filter(inbox=instance)
 
         if messages.exists():
             last_message = messages.last()
+            unseen_messages = Message.objects.filter(inbox=instance, receiver=user, seen=False)
+            response['unseen_count'] = unseen_messages.count()
             response['last_message'] = {
                 "sender": last_message.sender.full_name,
                 "receiver": last_message.receiver.full_name,
