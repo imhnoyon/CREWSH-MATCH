@@ -169,8 +169,8 @@ class Dashboard(APIView):
         prm_earn = private_mode_earning['amount_paid__sum'] if private_mode_earning['amount_paid__sum'] else 0
         profiles = Profile.objects.all()
         profile_count = profiles.count()
-        males = profiles.filter(gender="MALE")
-        females = profiles.filter(gender="FEMALE")
+        males = profiles.filter(gender="Male")
+        females = profiles.filter(gender="Female")
 
         data = {
             "user_count": users.count(),
