@@ -12,6 +12,7 @@ from django.utils.decorators import method_decorator
 
 from rest_framework import status
 from rest_framework import generics
+from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import  Response
 
@@ -180,3 +181,15 @@ class Webhook(generic.View):
             print('Unhandled event type {}'.format(event['type']))
 
         return JsonResponse("Success", safe=False)
+
+
+class VerifySuccessPayment(APIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    def get(self, *args, **kwargs):
+        try:
+            session_id = self.request.query_params.get("session_id")
+            checkout_session = stripe.checkout.Session.retrieve(id=session_id)
+            return Response({"payment_status": checkout_session.payment_status})
+        except Exception as e:
+            return Response({"payment_status": str(e)}, status=status.HTTP_400_BAD_REQUEST)

@@ -6,7 +6,8 @@ from .views import (
     CreateCheckoutSessionForPrivateMode,
     PaymentSuccessView,
     PaymentCancelView,
-    Webhook
+    Webhook,
+    VerifySuccessPayment
 )
 
 urlpatterns = [
@@ -16,4 +17,5 @@ urlpatterns = [
     path("success/", PaymentSuccessView.as_view(), name='payment-success'),
     path("cancel/", PaymentCancelView.as_view(), name='payment-cancel'),
     path("webhook/", Webhook.as_view(), name='webhook'),
+    path("payment/verify/", VerifySuccessPayment.as_view(), name='verify-payment'),
 ]

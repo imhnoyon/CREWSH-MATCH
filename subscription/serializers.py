@@ -76,7 +76,7 @@ class CheckoutSerializer(serializers.Serializer):
                 line_items=[{'price': price_id, 'quantity': 1, }],
                 payment_method_types=['card'],
                 mode='subscription',
-                success_url=settings.STRIPE_SUCCESS_URL,
+                success_url=settings.STRIPE_SUCCESS_URL + f"?session_id={{CHECKOUT_SESSION_ID}}",
                 cancel_url=settings.STRIPE_CANCEL_URL,
                 subscription_data={
                     "metadata": {
