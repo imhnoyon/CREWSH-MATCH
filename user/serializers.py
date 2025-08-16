@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from pyasn1_modules.rfc2459 import common_name
 
 from rest_framework import serializers
 
@@ -63,7 +64,11 @@ class ProfileSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         context = super().to_representation(instance)
         user = instance.user
+        ship = instance.ship
+        company = instance.company
         context['user'] = {"full_name": user.full_name}
+        context['company'] = {"id": company.id, "name": company.name}
+        context['ship'] = {"id": ship.id, "name": ship.name}
         return context
 
 
