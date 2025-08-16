@@ -97,3 +97,20 @@ class UploadProfilePhoto(APIView):
             user.save()
 
         return Response({"photo": self.request.build_absolute_uri(user.photo.url)}, status=status.HTTP_201_CREATED)
+
+
+class ViewUserDetails(generics.RetrieveAPIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+    serializer_class = UserSerializer
+    queryset = get_user_model().objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        data = serializer.data
+        fields_to_exclude = ("email_address", "is_subscribed", "is_active",)
+
+        for field in fields_to_exclude:
+            data.pop(field)
+
+        return Response(data)
