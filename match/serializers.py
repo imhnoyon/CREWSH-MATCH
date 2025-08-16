@@ -37,8 +37,10 @@ class MatchSerializer(serializers.ModelSerializer):
         context = super().to_representation(instance)
         sender = instance.sender
         receiver = instance.receiver
+        inbox = instance.inbox
         context['sender'] = {"id": sender.id, "full_name": sender.full_name, "photo": sender.get_photo()}
         context['receiver'] = {"id": receiver.id, "full_name": receiver.full_name, "photo": receiver.get_photo()}
+        context['inbox_id'] = inbox.inbox_id
         return context
 
 
