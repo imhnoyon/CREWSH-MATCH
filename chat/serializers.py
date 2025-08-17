@@ -9,14 +9,14 @@ User = get_user_model()
 
 
 class InboxSerializer(serializers.ModelSerializer):
-
-    name = serializers.SerializerMethodField(read_only=True, method_name="get_name")
+    chat_user = serializers.SerializerMethodField(read_only=True, method_name="get_chat_user")
 
     class Meta:
         model = Inbox
-        fields = ("id", "inbox_id", "match",  "name", "blocked", )
+        fields = ("id", "inbox_id", "match",  "chat_user", "blocked", )
 
-    def get_name(self, obj):
+    def get_chat_user(self, obj):
+        data = {}
         match = obj.match
         request = self.context.get("request")
         users = {
@@ -24,8 +24,10 @@ class InboxSerializer(serializers.ModelSerializer):
             "receiver": match.receiver
         }
         request_user_id = request.user.id
-        name = users['receiver'].full_name if request_user_id == users['sender'].id else users['sender'].full_name
-        return name
+        chat_user = users['receiver'] if request_user_id == users['sender'].id else users['sender']
+        data['name'] = chat_user.full_name
+        data['photo'] = chat_user.get_photo()
+        return data
 
     def to_representation(self, instance):
         response = super().to_representation(instance)
@@ -75,6 +77,7 @@ class MessageSerializer(serializers.ModelSerializer):
             self.validated_data['seen'] = True
 
         super().save(**kwargs)
+
 
 class ChatMessageSerializer(serializers.ModelSerializer):
     messages = serializers.SerializerMethodField(read_only=True, method_name="get_messages")

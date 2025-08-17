@@ -70,7 +70,7 @@ class MatchProfileSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        user = instance.user
+        response['photo'] = instance.user.get_photo()
         return response
 
 

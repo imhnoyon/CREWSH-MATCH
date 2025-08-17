@@ -47,6 +47,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         response = super().to_representation(instance)
+        response['photo'] = instance.get_photo()
         profile = instance.get_profile()
         response['profile'] = profile
         if profile:

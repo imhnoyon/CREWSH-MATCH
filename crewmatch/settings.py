@@ -229,3 +229,4 @@ CHANNEL_LAYERS = {
 }
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+DOMAIN = os.environ.get("DOMAIN", "http://localhost:8000")

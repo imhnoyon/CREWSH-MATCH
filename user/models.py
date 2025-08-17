@@ -52,7 +52,7 @@ class User(AbstractBaseUser, PermissionsMixin, Timestamp):
     def get_photo(self):
         photo = ""
         if self.photo:
-            photo = self.photo.url
+            photo = f"{settings.DOMAIN}{self.photo.url}"
         return photo
 
     def get_profile(self):
