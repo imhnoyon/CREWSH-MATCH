@@ -47,7 +47,7 @@ class AcceptRequest(generics.UpdateAPIView):
 
         serializer = MatchSerializer(match)
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class Unlike(APIView):
