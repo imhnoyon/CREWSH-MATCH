@@ -64,6 +64,10 @@ class User(AbstractBaseUser, PermissionsMixin, Timestamp):
     def has_profile(self) -> bool:
         return True if self.get_profile() else False
 
+    @property
+    def is_trial_active(self):
+        return timezone.now() <= self.created_at + timedelta(days=45)
+
 
 class AccountVerificationOtp(OtpCode):
     user = models.OneToOneField(User, related_name='otp', on_delete=models.CASCADE)

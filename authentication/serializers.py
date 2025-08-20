@@ -94,6 +94,7 @@ class AuthTokenSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         response = super().get_token(user)
+        response['is_trial_active'] = user.is_trial_active
         return response
 
     # Override validate to return extra data in payload
@@ -111,7 +112,7 @@ class AuthTokenSerializer(TokenObtainPairSerializer):
             "access_token_valid_till": exp_millis,
             "user_id": str(self.user.id),
             "role": self.user.role,
-            "profile": self.user.has_profile()
+            "profile": self.user.has_profile(),
         }
 
 
