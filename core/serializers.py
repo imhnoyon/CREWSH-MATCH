@@ -31,3 +31,11 @@ class SettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Settings
         fields = ("terms_and_conditions", )
+
+
+class CompanyAndShipSerializer(CompanySerializer):
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        response['ships'] = ShipSerializer(instance.ships.all(), many=True).data
+        return response
+

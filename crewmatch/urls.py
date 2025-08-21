@@ -11,6 +11,7 @@ api_urlpatterns = [
     path("subscription/", include("subscription.urls")),
     path("payment/", include("payment.urls")),
     path("administration/", include("administration.urls")),
+    path("site/", include("core.urls")),
 ]
 
 urlpatterns = [
