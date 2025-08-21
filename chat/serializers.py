@@ -59,6 +59,12 @@ class MessageSerializer(serializers.ModelSerializer):
             "inbox": {"write_only": True}
         }
 
+    def validate(self, attrs):
+        inbox = attrs['inbox']
+        if inbox.blocked:
+            raise serializers.ValidationError({"message": "Blocked Inbox"})
+        return attrs
+
     def to_representation(self, instance):
         context = super().to_representation(instance)
         sender = instance.sender

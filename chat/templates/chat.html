@@ -52,7 +52,7 @@
     const inboxId = "{{inbox.id}}"
     const chat_id = window.location.pathname.split("/")[2]
     const connection_id = "{{inbox_id}}"
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0OTcyNTU3LCJpYXQiOjE3NTQ4ODYxNTcsImp0aSI6IjY1NDc5OGFlNDA2MzQ3ZTdiMjg0ZGY0MmFkYzkwMmM1IiwidXNlcl9pZCI6IjEifQ.DgZGIjVud3lFTeYUP6b2CqxZlWw_p5BzlgbQYlHVDek"
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU1ODQ5MzI4LCJpYXQiOjE3NTU3NjI5MjgsImp0aSI6IjBiYWIwN2EzNzZmZjQyY2RiMzZlN2M4ZDZlZDFjZGYyIiwidXNlcl9pZCI6IjEiLCJpc190cmlhbF9hY3RpdmUiOnRydWV9.KpvU7zIeJGDd3ESoKterT_2lkOlTClxy0q5_rjqIvtc"
     const url = "ws://localhost:8001/ws/chat/" + connection_id + "/" + "?token=" + token
 
     const socket = new WebSocket(url)
