@@ -1,3 +1,5 @@
+import pycountry
+
 from rest_framework import status
 from rest_framework import permissions
 from rest_framework.views import APIView
@@ -14,3 +16,15 @@ class ListCompanyAndShip(APIView):
         companies = Company.objects.all()
         serializer = CompanyAndShipSerializer(companies, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+class ListCountry(APIView):
+    permission_classes = [ ]
+
+    def get(self, *args, **kwargs):
+        countries = [
+            {"code": country.alpha_2, "name": country.name}
+            for country in pycountry.countries
+        ]
+        return Response(countries, status=status.HTTP_200_OK)
+
