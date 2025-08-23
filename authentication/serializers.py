@@ -113,6 +113,7 @@ class AuthTokenSerializer(TokenObtainPairSerializer):
             "user_id": str(self.user.id),
             "role": self.user.role,
             "profile": self.user.has_profile(),
+            "is_trial_active": self.user.is_trial_active
         }
 
 
