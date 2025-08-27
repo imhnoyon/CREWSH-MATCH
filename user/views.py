@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.contrib.auth import get_user_model
 
 from rest_framework import status
@@ -96,7 +97,7 @@ class UploadProfilePhoto(APIView):
             user.photo = photo
             user.save()
 
-        return Response({"photo": self.request.build_absolute_uri(user.photo.url)}, status=status.HTTP_201_CREATED)
+        return Response({"photo": user.get_photo()}, status=status.HTTP_201_CREATED)
 
 
 class ViewUserDetails(generics.RetrieveAPIView):
@@ -113,4 +114,19 @@ class ViewUserDetails(generics.RetrieveAPIView):
         for field in fields_to_exclude:
             data.pop(field)
 
+        is_matched = (
+                self.request.user.matches.filter(receiver=instance).exists() or
+                self.request.user.accepted_matches.filter(sender=instance).exists())
+
+        data["is_matched"] = is_matched
+
         return Response(data)
+
+
+class Delete(APIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    def delete(self, *args, **kwargs):
+        User = get_user_model()
+        User.objects.filter(id=self.request.user.id).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

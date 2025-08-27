@@ -101,9 +101,9 @@ class ListMatchedProfile(generics.ListAPIView):
             ship = profile.ship
             matched_profile = Profile.objects.filter(
                 gender=gender_preference,
-                age_from=age_from,
-                age_to=age_to
-            ).exclude(country__in=banned_countries).exclude(user=self.request.user).exclude(user__id__in=recent_unliked)
+                # age_from__gte=age_from,
+                # age_to__gte=age_to
+            ).exclude(country__in=banned_countries).exclude(user=self.request.user).exclude(user__id__in=recent_unliked).exclude(user__is_superuser=True)
 
             return matched_profile
 

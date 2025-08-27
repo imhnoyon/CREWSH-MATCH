@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import serializers
 
 from user.models import Profile
@@ -70,7 +71,9 @@ class MatchProfileSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        response['photo'] = instance.user.get_photo()
+        user = instance.user
+        response['photo'] = user.get_photo()
+        response['images'] = [ {"url": f"{settings.DOMAIN}{image.image.url}"} for image in user.images.all()]
         return response
 
 

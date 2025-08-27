@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from pyasn1_modules.rfc2459 import common_name
 
 from rest_framework import serializers
 
@@ -50,6 +49,7 @@ class UserSerializer(serializers.ModelSerializer):
         response['photo'] = instance.get_photo()
         profile = instance.get_profile()
         response['profile'] = profile
+        response['images'] = ImageSerializer(instance.images.all(), many=True).data
         if profile:
             response['profile'] = ProfileSerializer(profile).data
             response['profile'].pop("user")
@@ -83,7 +83,7 @@ class ImageSerializer(serializers.ModelSerializer):
     def get_photo(self, obj):
         request = self.context.get("request")
         if obj.image and hasattr(obj.image, "url"):
-            return request.build_absolute_uri(obj.image.url)
+            return obj.user.get_photo()
         return None
 
 

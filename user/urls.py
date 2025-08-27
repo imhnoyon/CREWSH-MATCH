@@ -7,7 +7,8 @@ from .views import (
     UploadPhotos,
     UpdatePhotos,
     UploadProfilePhoto,
-    ViewUserDetails
+    ViewUserDetails,
+    Delete
 )
 
 
@@ -22,4 +23,5 @@ urlpatterns = [
     path("update-photos/", UpdatePhotos.as_view(), name='update-photos'),
     path("upload-profile-photo/", UploadProfilePhoto.as_view(), name='upload-profile-photo'),
     path("view-user-details/<int:pk>/", ViewUserDetails.as_view(), name='view-user-details'),
+    path("delete/", Delete.as_view(), name='delete'),
 ]
