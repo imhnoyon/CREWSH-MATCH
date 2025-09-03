@@ -34,7 +34,6 @@ class Subscription(Timestamp):
         return f"{self.user} subscribed to {self.plan}"
 
 
-
 class PrivateMode(Timestamp):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='private_subscription', on_delete=models.CASCADE)
     payment_intent_id = models.CharField(max_length=150)

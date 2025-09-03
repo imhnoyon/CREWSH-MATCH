@@ -1,4 +1,5 @@
-from datetime import timedelta
+from datetime import timedelta, date
+
 from django.utils import timezone
 
 from django.db.models import Q
@@ -90,20 +91,35 @@ class ListMatchedProfile(generics.ListAPIView):
         profile = self.request.user.get_profile()
         two_days_ago = timezone.now() - timedelta(days=2)
         recent_unliked = Unliked.objects.filter(last_timestamp__gte=two_days_ago, by=self.request.user).values_list("user", flat=True)
+        sent_requests = Request.objects.filter(sender=self.request.user).values_list("receiver")
 
         if profile:
             gender_preference = profile.gender_preference
             age_from = profile.age_from
             age_to = profile.age_to
+            today = date.today()
+            # youngest acceptable
+            max_dob = today.replace(year=today.year - age_from)
+            # oldest acceptable
+            min_dob = today.replace(year=today.year - age_to - 1) + timedelta(days=1)
             banned_countries = profile.banned_countries
             country = profile.country
             company = profile.company
             ship = profile.ship
             matched_profile = Profile.objects.filter(
                 gender=gender_preference,
-                # age_from__gte=age_from,
-                # age_to__gte=age_to
-            ).exclude(country__in=banned_countries).exclude(user=self.request.user).exclude(user__id__in=recent_unliked).exclude(user__is_superuser=True)
+                dob__range=(min_dob, max_dob)
+            ).exclude(
+                country__in=banned_countries
+            ).exclude(
+                user=self.request.user
+            ).exclude(
+                user__id__in=recent_unliked
+            ).exclude(
+                user__in=sent_requests
+            ).exclude(
+                user__is_superuser=True
+            )
 
             return matched_profile
 

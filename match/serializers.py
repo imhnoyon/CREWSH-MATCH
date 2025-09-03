@@ -9,6 +9,44 @@ class RequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Request
         fields = ("sender", "receiver", )
+        read_only_fields = ("sender", )
+
+    def validate(self, attrs):
+        request = self.context.get("request")
+        sender = request.user
+        receiver = attrs['receiver']
+
+        if sender == receiver:
+            raise serializers.ValidationError({"message": "You cannot send a request to yourself."})
+
+        if Request.objects.filter(sender=sender, receiver=receiver).exists():
+            raise serializers.ValidationError({"message": "You have already sent a request to this user."})
+
+        return attrs
+
+    def create(self, validated_data):
+        self.match = None
+        request = self.context.get("request")
+        sender = request.user
+        receiver = validated_data['receiver']
+
+        # Check if the receiver already liked the sender
+        request_obj = Request.objects.filter(
+            sender=receiver,
+            receiver=sender,
+            accepted=False,
+            canceled=False
+        ).first()
+
+        if request_obj:
+            request_obj.accepted = True
+            request_obj.save()
+            match, _ = Match.objects.get_or_create(sender=receiver, receiver=sender)
+            self.match = match
+        else:
+            request_obj = Request.objects.create(sender=sender, receiver=receiver)
+
+        return request_obj
 
     def to_representation(self, instance):
         context = super().to_representation(instance)
@@ -16,6 +54,11 @@ class RequestSerializer(serializers.ModelSerializer):
         receiver = instance.receiver
         context['sender'] = {"id": sender.id, "full_name": sender.full_name, "photo": sender.get_photo()}
         context['receiver'] = {"id": receiver.id, "full_name": receiver.full_name, "photo": receiver.get_photo()}
+        context['is_a_match'] = instance.accepted
+
+        if self.match:
+            context['inbox_id'] = self.match.inbox.inbox_id
+
         return context
 
 
@@ -74,6 +117,9 @@ class MatchProfileSerializer(serializers.ModelSerializer):
         user = instance.user
         response['photo'] = user.get_photo()
         response['images'] = [ {"url": f"{settings.DOMAIN}{image.image.url}"} for image in user.images.all()]
+        response['age'] = instance.age
+        response['is_private'] = instance.user.is_private
+        response['is_subscribed'] = instance.user.is_subscribed
         return response
 
 

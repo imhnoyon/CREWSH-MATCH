@@ -152,8 +152,8 @@ OTP_EXPIRY_SECONDS = 60 * 15
 # Rest framework config
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',
@@ -207,7 +207,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://10.10.12.10:8000",
     "http://localhost:5173",
-    "http://127.0.0.1:5173"
+    "http://127.0.0.1:5173",
+    "http://10.10.12.59:5173",
+    "https://dating-app-tau-two.vercel.app",
 ]
 
 CORS_ALLOW_CREDENTIALS = True

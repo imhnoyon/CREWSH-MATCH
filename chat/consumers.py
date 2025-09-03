@@ -16,18 +16,26 @@ class ChatConsumer(WebsocketConsumer):
     def connect(self):
         self.user = self.scope['user']
 
+        # Check if user is authenticated
         if not self.user.is_authenticated:
             self.close(code=401, reason="Authentication Failed")
             
         self.inbox_id = self.scope["url_route"]["kwargs"]["inbox_id"]
         self.room_group_name = f"chat_{self.inbox_id}"
 
+        # Check the existence of the inbox
         try:
             self.inbox = Inbox.objects.get(inbox_id=self.inbox_id)
         except Inbox.DoesNotExist:
             print("No such inbox_id")
             self.close(code=404, reason="Inbox id not valid")
 
+        match = self.inbox.match
+        inbox_users = (match.sender, match.receiver)
+
+        # Check if the user is a member of the inbox
+        if self.user not in inbox_users:
+            self.close(code=401, reason="You are not permitted to access this inbox")
 
         async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
 

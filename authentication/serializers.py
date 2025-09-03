@@ -110,7 +110,7 @@ class AuthTokenSerializer(TokenObtainPairSerializer):
             "access_token": str(access_token),
             "refresh_token": str(refresh),
             "access_token_valid_till": exp_millis,
-            "user_id": str(self.user.id),
+            "user_id": self.user.id,
             "role": self.user.role,
             "profile": self.user.has_profile(),
             "is_trial_active": self.user.is_trial_active

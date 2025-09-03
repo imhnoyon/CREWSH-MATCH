@@ -1,4 +1,6 @@
 import uuid
+from datetime import date
+
 from django.db import models
 from django.conf import settings
 from datetime import timedelta
@@ -113,6 +115,11 @@ class Profile(Timestamp):
 
     def __str__(self):
         return self.user.full_name
+
+    @property
+    def age(self):
+        today = date.today()
+        return today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
 
 
 class Image(models.Model):
