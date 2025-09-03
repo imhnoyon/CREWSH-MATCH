@@ -5,8 +5,8 @@ from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from .models import  Company
-from .serializers import CompanyAndShipSerializer
+from .models import  Company, Settings
+from .serializers import CompanyAndShipSerializer, SettingsSerializer
 
 
 class ListCompanyAndShip(APIView):
@@ -27,4 +27,16 @@ class ListCountry(APIView):
             for country in pycountry.countries
         ]
         return Response(countries, status=status.HTTP_200_OK)
+
+
+class RetrieveSiteTermsAndCondition(APIView):
+    permission_classes = [permissions.AllowAny, ]
+
+    def get(self, *args, **kwargs):
+        instance = Settings.objects.first()
+        if instance:
+            serializer = SettingsSerializer(instance)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"terms_and_conditions": None }, status=status.HTTP_200_OK)
 
