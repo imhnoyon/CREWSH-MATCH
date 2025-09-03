@@ -8,6 +8,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
+from .utils import get_monthly_earnings
+
 from core.models import Company, Ship, Announcement, Settings
 from core.serializers import (
     CompanySerializer, ShipSerializer, AnnouncementSerializer, SettingsSerializer
@@ -171,6 +173,7 @@ class Dashboard(APIView):
         profile_count = profiles.count()
         males = profiles.filter(gender="Male")
         females = profiles.filter(gender="Female")
+        last_six_month_earning = get_monthly_earnings()
 
         data = {
             "user_count": users.count(),
@@ -181,7 +184,8 @@ class Dashboard(APIView):
             "gender_data": {
                 "male_percentage": (males.count() / profile_count) * 100,
                 "female_percentage": (females.count()/ profile_count) * 100
-            }
+            },
+            "last_six_month_earning": last_six_month_earning
         }
 
         return Response(data, status=status.HTTP_200_OK)
