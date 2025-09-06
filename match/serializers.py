@@ -6,9 +6,10 @@ from .models import Request, Match, Notification, Unliked
 
 
 class RequestSerializer(serializers.ModelSerializer):
+    match = None
     class Meta:
         model = Request
-        fields = ("sender", "receiver", )
+        fields = ("id", "sender", "receiver", )
         read_only_fields = ("sender", )
 
     def validate(self, attrs):
@@ -52,8 +53,8 @@ class RequestSerializer(serializers.ModelSerializer):
         context = super().to_representation(instance)
         sender = instance.sender
         receiver = instance.receiver
-        context['sender'] = {"id": sender.id, "full_name": sender.full_name, "photo": sender.get_photo()}
-        context['receiver'] = {"id": receiver.id, "full_name": receiver.full_name, "photo": receiver.get_photo()}
+        context['sender'] = {"id": sender.id, "full_name": sender.full_name, "photo": sender.get_photo(), "age": sender.profile.age}
+        context['receiver'] = {"id": receiver.id, "full_name": receiver.full_name, "photo": receiver.get_photo(), "age": receiver.profile.age}
         context['is_a_match'] = instance.accepted
 
         if self.match:
@@ -75,7 +76,6 @@ class MatchSerializer(serializers.ModelSerializer):
             "sent_at",
             "updated_at",
         )
-
 
     def to_representation(self, instance):
         context = super().to_representation(instance)

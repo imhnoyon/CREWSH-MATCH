@@ -49,6 +49,10 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
     user_id = serializers.IntegerField(source='id', read_only=True)
+    email_address = serializers.EmailField(
+        required=True,
+        validators=[]
+    )
 
     class Meta:
         model = User
@@ -57,6 +61,12 @@ class UserSerializer(serializers.ModelSerializer):
             "is_active", "is_subscribed", "is_private", "is_banned",
             "created_at",
         )
+
+    def validate_email_address(self, value):
+        existing_user = User.objects.filter(email_address=value).first()
+        if existing_user and existing_user.is_active:
+            raise serializers.ValidationError("A verified user with this email already exists.")
+        return value
 
     def validate_password2(self, value):
         password = self.initial_data.get("password")
@@ -68,6 +78,20 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop("password2")
+        email = validated_data['email_address']
+        existing_user = User.objects.filter(email_address=email).first()
+
+        if existing_user:
+            # Update user and send new OTP manually
+            for attr, value in validated_data.items():
+                setattr(existing_user, attr, value)
+            existing_user.set_password(validated_data['password'])
+            existing_user.save()
+
+            # Send OTP manually (since signal won't fire)
+            self.send_otp_manually(existing_user)
+            return existing_user
+
         user = User.objects.create(
             is_active=False,
             **validated_data
@@ -75,6 +99,19 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+    def send_otp_manually(self, user):
+        otp, _ = AccountVerificationOtp.objects.update_or_create(
+            user=user,
+            defaults={'code': generate_otp()},
+        )
+        send_mail(
+            subject="Account Verification",
+            message=otp.code,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email_address],
+            fail_silently=True,
+        )
 
     def update(self, instance, validated_data):
         self.validated_data.pop("password2", None)
@@ -99,7 +136,10 @@ class AuthTokenSerializer(TokenObtainPairSerializer):
 
     # Override validate to return extra data in payload
     def validate(self, attrs):
-        data = super().validate(attrs)
+        try:
+            data = super().validate(attrs)
+        except AuthenticationFailed:
+            raise AuthenticationFailed(_("Invalid email or password. Please try again."))
         refresh = self.get_token(self.user)
         access_token = refresh.access_token
 
@@ -290,7 +330,7 @@ class VerifyOptSerializerWithUserId(serializers.Serializer):
             if user.is_active:
                 raise serializers.ValidationError({"message": "User is already verified"})
         except User.DoesNotExist:
-            raise serializers.ValidationError({"message": "No user exists with the provided email address"})
+            raise serializers.ValidationError({"message": "No user exists with the provided user id"})
 
         try:
             otp = user.otp
@@ -299,8 +339,7 @@ class VerifyOptSerializerWithUserId(serializers.Serializer):
             raise serializers.ValidationError({"message": "No such otp found"})
 
         now = timezone.now()
-        expiry_seconds = getattr(settings, 'OTP_EXPIRY_SECONDS', 60 * 15)
-        expiry_time = otp.created_at + timedelta(seconds=expiry_seconds)
+        expiry_time = otp.expired_at
 
         if now > expiry_time:
             raise serializers.ValidationError({"message": "Otp expired. Try again"})
