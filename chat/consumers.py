@@ -46,7 +46,7 @@ class ChatConsumer(WebsocketConsumer):
 
         self.send_data_on_open_close(is_online=True)
     
-    def receive(self, text_data):
+    def receive(self, text_data=None, bytes_data=None):
         payload = json.loads(text_data)
         serializer = MessageSerializer(data=payload)
 
@@ -90,6 +90,34 @@ class ChatConsumer(WebsocketConsumer):
         self.send_data_on_open_close(is_online=False)
         async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
         super().disconnect(code)
+
+    def chat_message(self, event):
+        self.send(text_data=json.dumps(event))
+        self.update_inbox(event)
+
+    def update_inbox(self, event: dict):
+        user_ids = (self.inbox.match.sender.id, self.inbox.match.receiver.id)
+
+        for user_id in user_ids:
+            async_to_sync(self.channel_layer.group_send)(f"chat_{user_id}", event)
+
+
+class InboxConsumer(WebsocketConsumer):
+    def connect(self):
+        self.user = self.scope['user']
+        self.user_id = self.scope['url_route']['kwargs']['user_id']
+
+        if self.user.id != self.user_id:
+            self.close(code=403, reason="You don't have permission to access this socket channel")
+
+        self.room_group_name = f"chat_{self.user_id}"
+
+        async_to_sync(self.channel_layer.group_add)(self.room_group_name, self.channel_name)
+
+        self.accept()
+
+    def receive(self, text_data=None, bytes_data=None):
+        async_to_sync(self.channel_layer.group_send)(self.room_group_name, json.loads(text_data))
 
     def chat_message(self, event):
         self.send(text_data=json.dumps(event))
