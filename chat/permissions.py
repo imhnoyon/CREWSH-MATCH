@@ -7,3 +7,8 @@ class HasInboxAccess(BasePermission):
         users = (match.sender, match.receiver)
         return bool(request.user.is_authenticated and request.user in users)
 
+
+class IsBlocker(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return bool(request.user.is_authenticated and request.user == obj.blocked_by)
+

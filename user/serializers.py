@@ -133,3 +133,36 @@ class UpdatePhotosSerializer(serializers.Serializer):
         image_objects = [Image(user=request.user, image=image) for image in new_images]
 
         return Image.objects.bulk_create(image_objects)
+
+
+class UserDetailsSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(source='id', read_only=True)
+    role = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            "user_id", "full_name", "email_address", "photo",
+            "is_active", "is_subscribed", "is_private", "role",
+            "created_at",
+        )
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        response['photo'] = instance.get_photo()
+        profile = instance.get_profile()
+
+        response['images'] = [{"url": image.get_url()} for image in instance.images.all()]
+
+        if profile:
+            response['id'] = profile.id
+            response["bio"] = profile.bio
+            response["dob"] = profile.dob
+            response["gender"] = profile.gender
+            response["company"] = profile.company.name
+            response["ship"] = profile.ship.name
+            response["country"] = profile.country
+            response["gender_preference"] = profile.gender_preference
+            response['age'] = profile.age
+            response['banned_countries'] = [country for country in profile.banned_countries]
+
+        return response

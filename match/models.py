@@ -12,9 +12,9 @@ class Request(Timestamp):
     canceled = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = (
-            ("sender", "receiver")
-        )
+        constraints = [
+            models.UniqueConstraint(fields=['sender', 'receiver'], name='unique_request_pair')
+        ]
 
     def __str__(self):
         return f"{self.sender.full_name} liked {self.receiver.full_name}"

@@ -13,7 +13,7 @@ class InboxSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Inbox
-        fields = ("id", "inbox_id", "match",  "chat_user", "blocked", )
+        fields = ("id", "inbox_id", "match",  "chat_user", "blocked", "blocked_by", )
 
     def get_chat_user(self, obj):
         data = {}
@@ -27,6 +27,7 @@ class InboxSerializer(serializers.ModelSerializer):
         chat_user = users['receiver'] if request_user_id == users['sender'].id else users['sender']
         data['name'] = chat_user.full_name
         data['photo'] = chat_user.get_photo()
+        data['user_id'] = chat_user.id
         return data
 
     def to_representation(self, instance):
@@ -34,6 +35,7 @@ class InboxSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         user = request.user
         response['last_message'] = None
+        response['unseen_count'] = 0
         messages = Message.objects.filter(inbox=instance)
 
         if messages.exists():

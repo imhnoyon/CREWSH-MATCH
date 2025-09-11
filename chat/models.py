@@ -24,6 +24,8 @@ class Inbox(models.Model):
     match = models.OneToOneField(Match, related_name='inbox', on_delete=models.CASCADE)
     online_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
     blocked = models.BooleanField(default=False)
+    blocked_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="blocked_inboxes", null=True, blank=True, on_delete=models.SET_NULL)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return str(self.inbox_id)
@@ -57,3 +59,13 @@ class Message(models.Model):
 
         return ext
     
+
+class BlockedInbox(models.Model):
+    inbox = models.OneToOneField(Inbox, related_name='blocked_entry', on_delete=models.CASCADE)
+    blocked_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='has_blocked', on_delete=models.CASCADE)
+    blocked_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='is_blocked', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.blocked_by.full_name} blocked {self.blocked_user.full_name}"
+

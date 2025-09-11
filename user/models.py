@@ -129,6 +129,10 @@ class Image(models.Model):
     def __str__(self):
         return  f"{self.user.full_name} - {self.image.url}"
 
+    def get_url(self):
+        return settings.DOMAIN + self.image.url
+
+
 
 
 

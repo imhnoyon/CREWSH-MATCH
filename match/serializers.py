@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.conf import settings
 from rest_framework import serializers
 
@@ -20,7 +21,10 @@ class RequestSerializer(serializers.ModelSerializer):
         if sender == receiver:
             raise serializers.ValidationError({"message": "You cannot send a request to yourself."})
 
-        if Request.objects.filter(sender=sender, receiver=receiver).exists():
+        if Request.objects.filter(
+                Q(sender=sender, receiver=receiver) |
+                Q(sender=receiver, receiver=sender)
+        ).exists():
             raise serializers.ValidationError({"message": "You have already sent a request to this user."})
 
         return attrs
@@ -81,6 +85,7 @@ class MatchSerializer(serializers.ModelSerializer):
         context = super().to_representation(instance)
         sender = instance.sender
         receiver = instance.receiver
+        print("match", instance, instance.id)
         inbox = instance.inbox
         context['sender'] = {"id": sender.id, "full_name": sender.full_name, "photo": sender.get_photo(), "age": sender.profile.age}
         context['receiver'] = {"id": receiver.id, "full_name": receiver.full_name, "photo": receiver.get_photo(), "age": receiver.profile.age}

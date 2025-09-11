@@ -1,4 +1,3 @@
-from django.db.models import Q
 from django.contrib.auth import get_user_model
 
 from rest_framework import status
@@ -16,6 +15,7 @@ from .serializers import (
     ImageSerializer,
     MultipleImageUploadSerializer,
     UpdatePhotosSerializer,
+    UserDetailsSerializer
 )
 
 class UpdateUser(generics.UpdateAPIView):
@@ -102,14 +102,14 @@ class UploadProfilePhoto(APIView):
 
 class ViewUserDetails(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
-    serializer_class = UserSerializer
+    serializer_class = UserDetailsSerializer
     queryset = get_user_model().objects.all()
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         data = serializer.data
-        fields_to_exclude = ("email_address", "is_subscribed", "is_active",)
+        fields_to_exclude = ("email_address", "is_active",)
 
         for field in fields_to_exclude:
             data.pop(field)

@@ -76,7 +76,7 @@ class ChatConsumer(WebsocketConsumer):
         event = {
             "type": "chat.presence",
             "user": self.user.full_name,
-            "status": is_online,
+            "success": is_online,
             "online_users_id": [ user.id for user in self.inbox.online_users.all()]
         }
         async_to_sync(self.channel_layer.group_send)(self.room_group_name, event)
