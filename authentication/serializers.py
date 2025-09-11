@@ -216,6 +216,8 @@ class ForgotPasswordSerializer(BaseOtpSerializer):
 
         try:
             user = User.objects.get(email_address=email_address)
+            if not user.is_active:
+                raise serializers.ValidationError({"message": "No user exists with the provided email address"})
         except User.DoesNotExist:
             raise serializers.ValidationError({"message": "No user exists with the provided email address"})
 

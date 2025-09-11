@@ -78,7 +78,7 @@ class AccountVerificationOtp(OtpCode):
         return f"{self.user.full_name} - {self.code}"
 
     def save(self, *args, **kwargs):
-        if not self.expired_at:
+        if not self.used:
             expiry_seconds = getattr(settings, 'OTP_EXPIRY_SECONDS', 60 * 15)
             self.expired_at = timezone.now() + timedelta(seconds=expiry_seconds)
         return super().save(*args, **kwargs)

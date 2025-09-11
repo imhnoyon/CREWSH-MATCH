@@ -25,6 +25,13 @@ class UserSerializer(serializers.ModelSerializer):
             "is_active", "is_subscribed", "is_private", "role",
             "created_at",
         )
+        read_only_fields = ("is_active", )
+
+    def validate_email_address(self, value):
+        user_exists = User.objects.filter(email_address=value, is_active=True, is_verified=True)
+        if user_exists:
+            raise serializers.ValidationError("User with the following email_address already exists")
+        return value
 
     def validate_password2(self, value):
         password = self.initial_data.get("password")
@@ -54,6 +61,11 @@ class UserSerializer(serializers.ModelSerializer):
             response['profile'] = ProfileSerializer(profile).data
             response['profile'].pop("user")
         return response
+
+
+class S(serializers.ModelSerializer):
+    def validate(self, attrs):
+        super().validate(attrs)
 
 
 class ProfileSerializer(serializers.ModelSerializer):
