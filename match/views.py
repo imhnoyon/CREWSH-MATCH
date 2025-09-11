@@ -92,6 +92,7 @@ class ListMatchedProfile(generics.ListAPIView):
         two_days_ago = timezone.now() - timedelta(days=2)
         recent_unliked = Unliked.objects.filter(last_timestamp__gte=two_days_ago, by=self.request.user).values_list("user", flat=True)
         sent_requests = Request.objects.filter(sender=self.request.user).values_list("receiver")
+        received_requests = Request.objects.filter(receiver=self.request.user).values_list("sender")
 
         if profile:
             gender_preference = profile.gender_preference
@@ -117,6 +118,8 @@ class ListMatchedProfile(generics.ListAPIView):
                 user__id__in=recent_unliked
             ).exclude(
                 user__in=sent_requests
+            ).exclude(
+                user__in=received_requests
             ).exclude(
                 user__is_superuser=True
             )

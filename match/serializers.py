@@ -25,7 +25,7 @@ class RequestSerializer(serializers.ModelSerializer):
                 Q(sender=sender, receiver=receiver) |
                 Q(sender=receiver, receiver=sender)
         ).exists():
-            raise serializers.ValidationError({"message": "You have already sent a request to this user."})
+            raise serializers.ValidationError({"message": "You have already sent a request to this user or received from the user."})
 
         return attrs
 
