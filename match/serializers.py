@@ -21,11 +21,14 @@ class RequestSerializer(serializers.ModelSerializer):
         if sender == receiver:
             raise serializers.ValidationError({"message": "You cannot send a request to yourself."})
 
-        if Request.objects.filter(
-                Q(sender=sender, receiver=receiver) |
-                Q(sender=receiver, receiver=sender)
-        ).exists():
-            raise serializers.ValidationError({"message": "You have already sent a request to this user or received from the user."})
+        if Request.objects.filter(sender=sender, receiver=receiver).exists():
+            raise serializers.ValidationError({"message": "You have already sent a request to this user"})
+
+        # if Request.objects.filter(
+        #         Q(sender=sender, receiver=receiver) |
+        #         Q(sender=receiver, receiver=sender)
+        # ).exists():
+        #     raise serializers.ValidationError({"message": "You have already sent a request to this user or received from the user."})
 
         return attrs
 
@@ -37,10 +40,8 @@ class RequestSerializer(serializers.ModelSerializer):
 
         # Check if the receiver already liked the sender
         request_obj = Request.objects.filter(
-            sender=receiver,
-            receiver=sender,
-            accepted=False,
-            canceled=False
+            Q(sender=sender, receiver=receiver) |
+            Q(sender=receiver, receiver=sender)
         ).first()
 
         if request_obj:

@@ -119,8 +119,6 @@ class ListMatchedProfile(generics.ListAPIView):
             ).exclude(
                 user__in=sent_requests
             ).exclude(
-                user__in=received_requests
-            ).exclude(
                 user__is_superuser=True
             )
 
