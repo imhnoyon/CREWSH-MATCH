@@ -75,6 +75,14 @@ class MessageSerializer(serializers.ModelSerializer):
         receiver_data = {"id": receiver.id, "full_name": receiver.full_name, "photo": receiver.get_photo()}
         context['sender'] = sender_data
         context['receiver'] = receiver_data
+        context['inbox_id'] = str(instance.inbox.inbox_id)
+        context['last_message'] = {
+            "sender": instance.sender.full_name,
+            "receiver": instance.receiver.full_name,
+            "message": instance.text,
+            "seen": instance.seen,
+            "timestamp": str(instance.timestamp)
+        }
         return context
 
     def save(self, **kwargs):
