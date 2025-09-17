@@ -13,6 +13,10 @@ class Announcement(Timestamp):
     title = models.CharField(max_length=100)
     link = models.URLField()
     banner = models.ImageField(upload_to="announcement_banners")
+    ship = models.ForeignKey(
+        "Ship", related_name='announcements',
+        on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return self.title
@@ -31,6 +35,7 @@ class Ship(Timestamp):
 
     class Meta:
         unique_together = ("company", "name", )
+        ordering = ['name', ]
 
     def __str__(self):
         return self.name

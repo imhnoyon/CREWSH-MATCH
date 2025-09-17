@@ -13,6 +13,7 @@ class PlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plan
         fields = (
+            "id",
             "ship",
             "name",
             "price_id",

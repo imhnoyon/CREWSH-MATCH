@@ -8,6 +8,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView
+)
 from .utils import get_monthly_earnings
 
 from core.models import Company, Ship, Announcement, Settings
@@ -26,8 +29,13 @@ from subscription.serializers import (
 )
 
 from .serializers import (
+    AuthTokenSerializer,
     AdminUserSerializer
 )
+
+
+class Signin(TokenObtainPairView):
+    serializer_class = AuthTokenSerializer
 
 
 class ListUser(generics.ListAPIView):
@@ -83,6 +91,12 @@ class ListCreatePlan(generics.ListCreateAPIView):
     queryset = Plan.objects.all()
 
 
+class DeletePlan(generics.DestroyAPIView):
+    permission_classes = [permissions.IsAdminUser, ]
+    serializer_class = PlanSerializer
+    queryset = Plan.objects.all()
+
+
 class ListSubscription(generics.ListAPIView):
     permission_classes = [permissions.IsAdminUser, ]
     serializer_class = SubscriptionSerializer
@@ -93,6 +107,19 @@ class ListCreateCompany(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAdminUser, ]
     serializer_class = CompanySerializer
     queryset = Company.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        data = serializer.data
+
+        return Response(data)
 
 
 class RetrieveDeleteCompany(generics.RetrieveUpdateDestroyAPIView):
@@ -118,10 +145,6 @@ class CreateAnnounceMent(generics.CreateAPIView):
     parser_classes = [MultiPartParser, FormParser, ]
     serializer_class = AnnouncementSerializer
     queryset = Announcement.objects.all()
-
-    def create(self, request, *args, **kwargs):
-        Announcement.objects.all().delete()
-        return super().create(request, *args, **kwargs)
 
 
 class UpdateAccount(generics.GenericAPIView):
@@ -171,8 +194,8 @@ class Dashboard(APIView):
         prm_earn = private_mode_earning['amount_paid__sum'] if private_mode_earning['amount_paid__sum'] else 0
         profiles = Profile.objects.all()
         profile_count = profiles.count()
-        males = profiles.filter(gender="Male")
-        females = profiles.filter(gender="Female")
+        males = profiles.filter(gender="Men")
+        females = profiles.filter(gender="Women")
         last_six_month_earning = get_monthly_earnings()
 
         data = {

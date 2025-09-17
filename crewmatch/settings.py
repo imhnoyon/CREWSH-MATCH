@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
+from django.conf.global_settings import APPEND_SLASH
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -163,7 +165,7 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=365),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1095),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
     "UPDATE_LAST_LOGIN": False,
@@ -210,6 +212,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://10.10.12.59:5173",
     "https://dating-app-tau-two.vercel.app",
+    'https://gentle-thrush-enormously.ngrok-free.app'
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -230,3 +233,5 @@ CHANNEL_LAYERS = {
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 DOMAIN = os.environ.get("DOMAIN", "http://localhost:8000")
+
+APPEND_SLASH = True
