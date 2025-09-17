@@ -16,9 +16,14 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ["__str__", "is_subscribed", "is_private", ]
 
 
+class ProfileAdmin(admin.ModelAdmin):
+    model = Profile
+    list_display = ["__str__", "company", "ship", "gender", "gender_preference", ]
+
+
 admin.site.register(User, UserAdmin)
 admin.site.register(AccountVerificationOtp)
-admin.site.register(Profile)
+admin.site.register(Profile, ProfileAdmin)
 admin.site.register(Image, ImageAdmin)
 admin.site.register(PasswordResetOtp)
 

@@ -107,12 +107,19 @@ class ListMatchedProfile(generics.ListAPIView):
             country = profile.country
             company = profile.company
             ship = profile.ship
-            matched_profile = Profile.objects.filter(
-                gender=gender_preference,
+
+            profile_queryset = Profile.objects.filter(
                 dob__range=(min_dob, max_dob),
                 ship=ship,
                 company=company
-            ).exclude(
+            )
+
+            if gender_preference != "Both":
+                profile_queryset = profile_queryset.filter(
+                    gender=gender_preference
+                )
+
+            matched_profile = profile_queryset.exclude(
                 country__in=banned_countries
             ).exclude(
                 user=self.request.user
