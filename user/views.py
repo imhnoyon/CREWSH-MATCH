@@ -15,7 +15,8 @@ from .serializers import (
     ImageSerializer,
     MultipleImageUploadSerializer,
     UpdatePhotosSerializer,
-    UserDetailsSerializer
+    UserDetailsSerializer,
+    ImageUploadSerializer,
 )
 
 class UpdateUser(generics.UpdateAPIView):
@@ -92,6 +93,14 @@ class UploadProfilePhoto(APIView):
     def post(self, *args, **kwargs):
         photo = self.request.FILES.get("photo", None)
         user = self.request.user
+
+        if not photo:
+            return Response({"message": "Please uplaod a photo"})
+        
+        serializer = ImageUploadSerializer(data={"image": photo})
+
+        if not serializer.is_valid():
+            return Response({"message": serializer.errors.get("image")[0]})
 
         if photo:
             user.photo = photo
