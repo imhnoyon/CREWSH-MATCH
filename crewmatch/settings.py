@@ -126,6 +126,11 @@ STATIC_URL = 'static/'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+ON_PRODUCTION = os.environ.get("ON_PRODUCTION") == "True"
+
+if ON_PRODUCTION:
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 

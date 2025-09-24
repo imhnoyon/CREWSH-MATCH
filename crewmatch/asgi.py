@@ -1,16 +1,19 @@
 import os
+import django
 
 from channels.auth import AuthMiddlewareStack
-from .middlewares import JWTAuthMiddleware
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
 from django.core.asgi import get_asgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "crewmatch.settings")
 
-django_asgi_app = get_asgi_application()
+django.setup()
 
+from .middlewares import JWTAuthMiddleware
 from chat.routing import websocket_urlpatterns
+
+django_asgi_app = get_asgi_application()
 
 application = ProtocolTypeRouter(
     {
