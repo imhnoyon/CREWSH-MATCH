@@ -251,5 +251,5 @@ DOMAIN = os.environ.get("DOMAIN", "http://localhost:8000")
 APPEND_SLASH = True
 
 CSRF_TRUSTED_ORIGINS = [
-    os.environ.get("DOMAIN"),
+    os.environ.get("HOST"),
 ]
