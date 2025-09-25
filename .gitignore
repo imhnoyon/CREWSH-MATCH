@@ -71,3 +71,5 @@ htmlcov/
 
 # local
 stripe-cli/
+yes
+yes.pub
