@@ -22,8 +22,8 @@ def send_otp(instance, created, *args, **kwargs):
                 }
             )
             send_mail(
-                subject="Account Verification",
-                message=otp.code,
+                subject="Account Verification OTP for Crew Match",
+                message=f"Your account verification opt is {otp.code}. Please enter this otp to verify your account",
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[instance.email_address],
                 fail_silently=True

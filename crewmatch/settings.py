@@ -1,12 +1,14 @@
 import os
 from pathlib import Path
 from datetime import timedelta
-
+from dotenv import load_dotenv
 from django.conf.global_settings import APPEND_SLASH
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load your environment variables
+load_dotenv(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -15,7 +17,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-2z$49*yf-j)!!-!rq4tu-
 
 DEBUG = os.environ.get("DEBUG") == 'True'
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -131,8 +133,6 @@ ON_PRODUCTION = os.environ.get("ON_PRODUCTION") == "True"
 if ON_PRODUCTION:
     STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -144,14 +144,14 @@ AUTHENTICATION_BACKENDS = (
 
 # Email config
 
-DEFAULT_FROM_EMAIL = 'webmaster@localhost'
+DEFAULT_FROM_EMAIL = os.environ.get("EMAIL_HOST_USER", "webmaster@localhost")
 
-EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.hostinger.com")
 EMAIL_PORT = os.environ.get("EMAIL_PORT", 587)
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "your_email@gmail.com")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "your_app_password")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "webmaster@localhost")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "Nobody@1314")
 
 # Otp expiry time in seconds
 OTP_EXPIRY_SECONDS = 60 * 15
@@ -159,8 +159,6 @@ OTP_EXPIRY_SECONDS = 60 * 15
 # Rest framework config
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        # 'rest_framework.authentication.BasicAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',
@@ -201,7 +199,6 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
 
     "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
-    # "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
     "TOKEN_REFRESH_SERIALIZER": "authentication.serializers.RefreshTokenSerializer",
     "TOKEN_VERIFY_SERIALIZER": "rest_framework_simplejwt.serializers.TokenVerifySerializer",
     "TOKEN_BLACKLIST_SERIALIZER": "rest_framework_simplejwt.serializers.TokenBlacklistSerializer",
@@ -251,5 +248,5 @@ DOMAIN = os.environ.get("DOMAIN", "http://localhost:8000")
 APPEND_SLASH = True
 
 CSRF_TRUSTED_ORIGINS = [
-    os.environ.get("HOST"),
+    os.environ.get("HOST", "http://localhost:8000"),
 ]

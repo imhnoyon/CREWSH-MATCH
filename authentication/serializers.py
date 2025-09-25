@@ -106,12 +106,12 @@ class UserSerializer(serializers.ModelSerializer):
             defaults={'code': generate_otp()},
         )
         send_mail(
-            subject="Account Verification",
-            message=otp.code,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email_address],
-            fail_silently=True,
-        )
+                subject="Account Verification OTP for Crew Match",
+                message=f"Your account verification opt is {otp.code}. Please enter this otp to verify your account",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email_address],
+                fail_silently=True
+            )
 
     def update(self, instance, validated_data):
         self.validated_data.pop("password2", None)
