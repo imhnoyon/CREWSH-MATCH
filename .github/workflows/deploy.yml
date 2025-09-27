@@ -20,7 +20,7 @@ jobs:
 
       - name: Deploy via SSH # run: ssh -o StrictHostKeyChecking=no user@your-vps-ip "/home/user/deploy.sh"
         run: |
-          ssh -o StrictHostKeyChecking=no root@your-vps-ip << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.VPS_HOST }} << 'EOF'
             cd /home/backend_dev/Crew-Match-Backend
             git pull origin main
             source venv/bin/activate
