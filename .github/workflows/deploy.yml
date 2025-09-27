@@ -1,0 +1,32 @@
+name: Deploy to VPS on Push
+
+on:
+  push:
+    branches:
+      - main  # change to your deployment branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Deploy via SSH # run: ssh -o StrictHostKeyChecking=no user@your-vps-ip "/home/user/deploy.sh"
+        run: |
+          ssh -o StrictHostKeyChecking=no root@your-vps-ip << 'EOF'
+            cd /home/backend_dev/Crew-Match-Backend
+            git pull origin main
+            source venv/bin/activate
+            pip install -r requirements.txt
+            python manage.py migrate
+            python manage.py collectstatic --noinput
+            sudo systemctl restart daphne
+            sudo systemctl reload nginx
+          EOF
