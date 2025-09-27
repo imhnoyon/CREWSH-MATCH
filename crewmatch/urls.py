@@ -21,3 +21,7 @@ urlpatterns = [
 
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+admin.site.site_header = "Crewsh Administration"
+admin.site.site_title = "Crewsh Admin Portal"
+admin.site.index_title = "Welcome to the Admin Dashboard"
