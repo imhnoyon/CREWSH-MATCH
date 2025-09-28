@@ -47,3 +47,6 @@ PostgreSQL
     GRANT ALL PRIVILEGES ON DATABASE db_name TO username;
     GRANT ALL PRIVILEGES ON SCHEMA public TO username;
 ```
+
+
+<!-- Security scan triggered at 2025-09-28 15:50:11 -->
