@@ -147,11 +147,11 @@ AUTHENTICATION_BACKENDS = (
 DEFAULT_FROM_EMAIL = os.environ.get("EMAIL_HOST_USER", "webmaster@localhost")
 
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.hostinger.com")
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = os.environ.get("EMAIL_PORT", 587)
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "webmaster@localhost")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "Nobody@1314")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "yourpassword")
 
 # Otp expiry time in seconds
 OTP_EXPIRY_SECONDS = 60 * 15
