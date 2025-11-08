@@ -184,7 +184,7 @@ class Dashboard(APIView):
     permission_classes = [permissions.IsAdminUser, ]
 
     def get(self, *args, **kwargs):
-        users = get_user_model().objects.all()
+        users = get_user_model().objects.all().exclude(is_superuser=True)
         matches = Match.objects.all()
         subscriptions = Subscription.objects.all()
         private_modes = PrivateMode.objects.all()
