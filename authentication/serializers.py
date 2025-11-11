@@ -24,8 +24,8 @@ from user.models import (
 User = get_user_model()
 
 EMAIL_SUBJECTS = {
-    "account_verification": "Verify Account for Crew Match",
-    "rest_password": "Reset Password for Crew Match"
+    "account_verification": "Verify Account for Crewsh",
+    "rest_password": "Reset Password for Crewsh"
 }
 
 
@@ -225,6 +225,7 @@ class ForgotPasswordSerializer(BaseOtpSerializer):
 
     def save(self, **kwargs):
         user = User.objects.get(email_address=self.validated_data['email_address'])
+        PasswordResetOtp.objects.filter(user=user).delete()
         instance = PasswordResetOtp()
         verification = super().save(user=user, instance=instance, **kwargs)
 
