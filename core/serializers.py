@@ -29,7 +29,7 @@ class ShipSerializer(serializers.ModelSerializer):
         if request:
             user = request.user
             if user.is_staff and user.is_superuser:
-                response['total_users'] = Profile.objects.filter(ship=instance).count()
+                response['total_users'] = Profile.objects.filter(ship=instance).exclude(user__is_superuser=True).count()
                 response['total_subscribers'] = Profile.objects.filter(user__is_subscribed=True,
                                                                        ship=instance).count()
                 response['total_matches'] = Match.objects.filter(
