@@ -21,9 +21,10 @@ class Command(BaseCommand):
                 try:
                     for data in reader:
                         for company_name, ship_name in data.items():
-                            company, _ = Company.objects.get_or_create(name=company_name)
-                            ship, _ = Ship.objects.get_or_create(company=company, name=ship_name)
-                            ship_count += 1
+                            if company_name and ship_name:
+                                company, _ = Company.objects.get_or_create(name=company_name)
+                                ship, _ = Ship.objects.get_or_create(company=company, name=ship_name)
+                                ship_count += 1
 
                     print("Data imported successfully.")
 
