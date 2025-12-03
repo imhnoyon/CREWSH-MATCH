@@ -98,7 +98,7 @@ class PasswordResetOtp(OtpCode):
 
 
 class Profile(Timestamp):
-    GENDER = (("Men", "Men"), ("Women", "Women"))
+    GENDER = (("Man", "Man"), ("Woman", "Woman"))
     GENDER_CHOICES = GENDER + (("Both", "Both"),)
 
     user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
