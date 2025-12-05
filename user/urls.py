@@ -8,7 +8,8 @@ from .views import (
     UpdatePhotos,
     UploadProfilePhoto,
     ViewUserDetails,
-    Delete
+    Delete,
+    NewUpdatePhotos
 )
 
 
@@ -21,6 +22,7 @@ urlpatterns = [
     path("update-profile/", UpdateProfile.as_view(), name='update-profile'),
     path("upload-photos/", UploadPhotos.as_view(), name='upload-photos'),
     path("update-photos/", UpdatePhotos.as_view(), name='update-photos'),
+    path("new-update-photos/", NewUpdatePhotos.as_view(), name='new-update-photos'),
     path("upload-profile-photo/", UploadProfilePhoto.as_view(), name='upload-profile-photo'),
     path("view-user-details/<int:pk>/", ViewUserDetails.as_view(), name='view-user-details'),
     path("delete/", Delete.as_view(), name='delete'),

@@ -17,6 +17,7 @@ from .serializers import (
     UpdatePhotosSerializer,
     UserDetailsSerializer,
     ImageUploadSerializer,
+    NewUpdatePhotosSerializer
 )
 
 class UpdateUser(generics.UpdateAPIView):
@@ -79,12 +80,25 @@ class UpdatePhotos(APIView):
     parser_classes = [parsers.MultiPartParser, parsers.FormParser, ]
 
     def post(self, *args, **kwargs):
+        print("data", self.request.data)
         serializer = UpdatePhotosSerializer(data=self.request.data, context={"request": self.request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         photos = ImageSerializer(self.request.user.images.all(), many=True, context={"request": self.request})
         return Response(photos.data, status=status.HTTP_201_CREATED)
 
+class NewUpdatePhotos(APIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser, ]
+
+    def post(self, *args, **kwargs):
+        print("data", self.request.data)
+        serializer = NewUpdatePhotosSerializer(data=self.request.data, context={"request": self.request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        # photos = ImageSerializer(self.request.user.images.all(), many=True, context={"request": self.request})
+        # return Response(photos.data, status=status.HTTP_201_CREATED)
+        return Response("ok")
 
 class UploadProfilePhoto(APIView):
     permission_classes = [permissions.IsAuthenticated, ]

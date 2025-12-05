@@ -107,7 +107,7 @@ class ListMatchedProfile(generics.ListAPIView):
             country = profile.country
             company = profile.company
             ship = profile.ship
-
+            # return Profile.objects.exclude(user__is_superuser=True).exclude(user__id=self.request.user.id)
             profile_queryset = Profile.objects.filter(
                 dob__range=(min_dob, max_dob),
                 ship=ship,
