@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
@@ -93,10 +95,11 @@ class ImageSerializer(serializers.ModelSerializer):
         fields = ("id", "user", "image", )
 
     def get_photo(self, obj):
-        request = self.context.get("request")
-        if obj.image and hasattr(obj.image, "url"):
-            return obj.user.get_photo()
-        return None
+        # request = self.context.get("request")
+        # if obj.image and hasattr(obj.image, "url"):
+        #     return obj.user.get_photo()
+        # return None
+        return obj.get_url()
 
 
 class ImageUploadSerializer(serializers.ModelSerializer):
@@ -124,9 +127,52 @@ class MultipleImageUploadSerializer(serializers.Serializer):
         return Image.objects.bulk_create(image_objects)
 
 
+class NewUpdatePhotosSerializer(serializers.Serializer):
+    new_images = serializers.ListField(child=serializers.ImageField(), allow_empty=True, required=False)
+    replace = serializers.CharField(required=False)
+
+    def validate(self, attrs):
+        try:
+            replace_data = json.loads(attrs['replace'])
+        except Exception as e:
+            raise serializers.ValidationError({"message": str(e)})
+        return attrs
+
+    def validate_new_images(self, value):
+        size_in_mb = 2
+        max_size = size_in_mb * 1024 * 1024
+        for image in value:
+            if image.size > max_size:
+                raise serializers.ValidationError(f"File must not exceed {size_in_mb} Mb")
+        return value
+
+    def save(self, **kwargs):
+        replace = json.loads(self.validated_data.get('replace', '[]'))
+        new_images = self.validated_data.get('new_images', [])
+        uploaded_images = []
+        replaced_images = []
+        request = self.context.get("request")
+        replace_image_idx = [int(list(d.keys())[0]) for d in replace]
+
+        for i, img in enumerate(new_images):
+            if i in replace_image_idx:
+                replaced_images.append({str(replace[i]): img})
+            else:
+                uploaded_images.append(img)
+
+        # image_objects = [Image(user=request.user, image=image) for image in new_images]
+
+        # return Image.objects.bulk_create(image_objects)
+        return self.validated_data
+
+
 class UpdatePhotosSerializer(serializers.Serializer):
     deleted_images = serializers.ListField(child=serializers.IntegerField(), allow_empty=True, required=False)
     new_images = serializers.ListField(child=serializers.ImageField(), allow_empty=True, required=False)
+
+    def validate(self, attrs):
+        print("from attrs", attrs)
+        return attrs
 
     def validate_new_images(self, value):
         size_in_mb = 2
