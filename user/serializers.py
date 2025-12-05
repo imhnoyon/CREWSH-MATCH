@@ -127,13 +127,14 @@ class MultipleImageUploadSerializer(serializers.Serializer):
         return Image.objects.bulk_create(image_objects)
 
 
-class NewUpdatePhotosSerializer(serializers.Serializer):
+class UpdateAndReplacePhotosSerializer(serializers.Serializer):
     new_images = serializers.ListField(child=serializers.ImageField(), allow_empty=True, required=False)
     replace = serializers.CharField(required=False)
 
     def validate(self, attrs):
         try:
-            replace_data = json.loads(attrs['replace'])
+            if attrs.get("replace"):
+                replace_data = json.loads(attrs['replace'])
         except Exception as e:
             raise serializers.ValidationError({"message": str(e)})
         return attrs
@@ -147,32 +148,34 @@ class NewUpdatePhotosSerializer(serializers.Serializer):
         return value
 
     def save(self, **kwargs):
-        replace = json.loads(self.validated_data.get('replace', '[]'))
+        replace_image_idx = json.loads(self.validated_data.get('replace', '{}'))
         new_images = self.validated_data.get('new_images', [])
         uploaded_images = []
         replaced_images = []
         request = self.context.get("request")
-        replace_image_idx = [int(list(d.keys())[0]) for d in replace]
 
         for i, img in enumerate(new_images):
-            if i in replace_image_idx:
-                replaced_images.append({str(replace[i]): img})
+            if str(i) in replace_image_idx:
+                replaced_images.append({"id": replace_image_idx.get(str(i)), "image": img})
             else:
                 uploaded_images.append(img)
 
-        # image_objects = [Image(user=request.user, image=image) for image in new_images]
+        for r in replaced_images:
+            try:
+                image = Image.objects.get(id=r['id'])
+                image.image = r['image']
+                image.save(update_fields=['image'])
+            except Exception as e:
+                print("Error updating %s" % str(e))
 
-        # return Image.objects.bulk_create(image_objects)
-        return self.validated_data
+        image_objects = [Image(user=request.user, image=image) for image in uploaded_images]
+
+        return Image.objects.bulk_create(image_objects)
 
 
 class UpdatePhotosSerializer(serializers.Serializer):
     deleted_images = serializers.ListField(child=serializers.IntegerField(), allow_empty=True, required=False)
     new_images = serializers.ListField(child=serializers.ImageField(), allow_empty=True, required=False)
-
-    def validate(self, attrs):
-        print("from attrs", attrs)
-        return attrs
 
     def validate_new_images(self, value):
         size_in_mb = 2
