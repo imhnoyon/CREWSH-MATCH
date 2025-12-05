@@ -124,8 +124,6 @@ class ListMatchedProfile(generics.ListAPIView):
             ).exclude(
                 user=self.request.user
             ).exclude(
-                user__id__in=recent_unliked
-            ).exclude(
                 user__in=sent_requests
             ).exclude(
                 user__is_superuser=True
