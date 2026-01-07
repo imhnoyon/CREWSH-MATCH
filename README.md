@@ -1,4 +1,5 @@
-**Crew Match**
+Crew Match
+==
 
 An online dating app serving the following features:
 
@@ -9,8 +10,10 @@ An online dating app serving the following features:
 System Requirements
 ==
 
-Python 3.13.x
-Docker
+```
+    Python 3.13.x
+    Docker
+```
 
 Usage
 ===
