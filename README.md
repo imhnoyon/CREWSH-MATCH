@@ -1,13 +1,26 @@
-**Crew Match Backend Python**
+**Crew Match**
+
+An online dating app serving the following features:
+
+    + Find crewship members based on profile preference
+    + Swipe based like/dislike/match
+    + Text messaging
+
+System Requirements
+==
+
+Python 3.13.x
+Docker
 
 Usage
 ===
 
 ```bash
+    docker run -d --name redis -p 6379:6379 redis
     git clone git@github.com:Joint-Venture-AI/Crew-Match-Backend.git
     cd Crew-Match-Backend
     python -m venv venv
-    venv/Scripts/activate
+    source venv/bin/activate # venv\Scripts\activate on windows
     pip install -r requirements.txt
     python manage.py migrate
     python manage.py runserver
@@ -30,23 +43,11 @@ ENV
     STRIPE_WEBHOOK_KEY=stripe_webhook_key
     STRIPE_SUCCESS_URL=http://localhost:8000/payment/success/
     STRIPE_CANCEL_URL=http://localhost:8000/payment/cancel/
-    # Set in case of gmail/smtp else remove
-    EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-    EMAIL_HOST=smtp.gmail.com
-    EMAIL_PORT=587
-    EMAIL_HOST_USER=youremail@gmail.com
-    EMAIL_HOST_PASSWORD=gmail_app_password
+    # Set in case of gmail/smtp
+    # EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+    # EMAIL_HOST=smtp.gmail.com
+    # EMAIL_PORT=587
+    # EMAIL_HOST_USER=youremail@gmail.com
+    # EMAIL_HOST_PASSWORD=gmail_app_password
     
 ```
-
-PostgreSQL
-===
-```bash
-    CREATE DATABASE db_name;
-    CREATE USER username WITH PASSWORD 'password';
-    GRANT ALL PRIVILEGES ON DATABASE db_name TO username;
-    GRANT ALL PRIVILEGES ON SCHEMA public TO username;
-```
-
-
-<!-- Security scan triggered at 2025-09-28 15:50:11 -->

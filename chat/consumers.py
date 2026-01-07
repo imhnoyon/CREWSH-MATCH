@@ -19,6 +19,7 @@ class ChatConsumer(WebsocketConsumer):
         # Check if user is authenticated
         if not self.user.is_authenticated:
             self.close(code=401, reason="Authentication Failed")
+            return
             
         self.inbox_id = self.scope["url_route"]["kwargs"]["inbox_id"]
         self.room_group_name = f"chat_{self.inbox_id}"
@@ -85,11 +86,11 @@ class ChatConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps(event))
 
     def disconnect(self, code):
-        self.disconnect_user_from_inbox()
-        # print(f"{self.user} is disconnected")
-        self.send_data_on_open_close(is_online=False)
-        async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
-        super().disconnect(code)
+        if self.user.is_authenticated:
+            self.disconnect_user_from_inbox()
+            self.send_data_on_open_close(is_online=False)
+            async_to_sync(self.channel_layer.group_discard)(self.room_group_name, self.channel_name)
+        return super().disconnect(code)
 
     def chat_message(self, event):
         self.send(text_data=json.dumps(event))

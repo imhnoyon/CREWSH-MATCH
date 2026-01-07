@@ -227,14 +227,7 @@ STRIPE_WEBHOOK_KEY = os.environ.get("STRIPE_WEBHOOK_KEY", "")
 STRIPE_SUCCESS_URL = os.environ.get("STRIPE_SUCCESS_URL", "http://localhost:8000/payment/success/")
 STRIPE_CANCEL_URL = os.environ.get("STRIPE_CANCEL_URL", "http://localhost:8000/payment/cancel/")
 
-if not ON_PRODUCTION:
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels.layers.InMemoryChannelLayer"
-        }
-    }
-else:
-    CHANNEL_LAYERS = {
+CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
