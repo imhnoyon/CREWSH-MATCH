@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
-from django.conf.global_settings import APPEND_SLASH
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,12 +15,10 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-2z$49*yf-j)!!-!rq4tu-t5hd9-vhk=@c=$$t8nf(8%-t^uzjx")
 
 DEBUG = os.environ.get("DEBUG") == 'True'
-
-ALLOWED_HOSTS = ["*"]
-
+ON_PRODUCTION = os.environ.get("ON_PRODUCTION") == "True"
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
 
 # Application definition
-
 INSTALLED_APPS = [
     'daphne',
     'django.contrib.admin',
@@ -128,8 +125,6 @@ STATIC_URL = 'static/'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-ON_PRODUCTION = os.environ.get("ON_PRODUCTION") == "True"
-
 if ON_PRODUCTION:
     STATIC_ROOT = BASE_DIR / 'staticfiles'
 
@@ -214,11 +209,13 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://10.10.12.59:5173",
     "https://dating-app-tau-two.vercel.app",
+    "https://admin.crewsh.com",
     'https://gentle-thrush-enormously.ngrok-free.app'
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = DEBUG
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
 
 # Stripe
 STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY", "")
@@ -235,12 +232,13 @@ CHANNEL_LAYERS = {
         },
     },
 }
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 DOMAIN = os.environ.get("DOMAIN", "http://localhost:8000")
 
 APPEND_SLASH = True
 
-CSRF_TRUSTED_ORIGINS = [
-    os.environ.get("HOST", "http://localhost:8000"),
-]
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True
 
+if ON_PRODUCTION:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
