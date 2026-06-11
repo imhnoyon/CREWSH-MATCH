@@ -18,7 +18,7 @@ DEBUG = os.environ.get("DEBUG") == 'True'
 ON_PRODUCTION = os.environ.get("ON_PRODUCTION") == "True"
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.getenv("ALLOWED_HOSTS", "").split(",")
+    for host in os.getenv("ALLOWED_HOSTS", "*").split(",")
     if host.strip()
 ]
 
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'subscription',
     'payment',
     'administration',
+    'marketplace',
 ]
 
 MIDDLEWARE = [
