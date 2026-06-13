@@ -24,6 +24,7 @@ class Match(models.Model):
     connection_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='matches', on_delete=models.CASCADE)
     receiver = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='accepted_matches', on_delete=models.CASCADE)
+    product = models.ForeignKey('marketplace.Product', null=True, blank=True, related_name='matches', on_delete=models.CASCADE)
     blocked = models.BooleanField(default=False)
     unfriended = models.BooleanField(default=False)
     sent_at = models.DateTimeField(auto_now_add=True)

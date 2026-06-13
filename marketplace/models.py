@@ -13,5 +13,9 @@ class Product(models.Model):
     def is_expired(self):
         return timezone.now() > self.valid_until
 
+    @classmethod
+    def delete_expired(cls):
+        cls.objects.filter(valid_until__isnull=False, valid_until__lte=timezone.now()).delete()
+
     def __str__(self):
         return self.name
