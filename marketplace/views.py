@@ -24,7 +24,7 @@ class ProductCreateAPIView(APIView):
             )
 
             return Response(
-                ProductSerializer(product).data,
+                ProductSerializer(product, context={'request': request}).data,
                 status=status.HTTP_201_CREATED
             )
 
