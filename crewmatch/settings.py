@@ -18,7 +18,7 @@ DEBUG = os.environ.get("DEBUG") == 'True'
 ON_PRODUCTION = os.environ.get("ON_PRODUCTION") == "True"
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.getenv("ALLOWED_HOSTS", "*").split(",")
+    for host in os.getenv("ALLOWED_HOSTS", "10.10.29.64").split(",")
     if host.strip()
 ]
 
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -130,9 +131,12 @@ STATIC_URL = 'static/'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+
+
 if ON_PRODUCTION:
     STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -209,18 +213,23 @@ SIMPLE_JWT = {
 # Cors
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
-    "http://10.10.12.10:8000",
+    # "http://10.10.12.10:8000",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://10.10.12.59:5173",
     "https://dating-app-tau-two.vercel.app",
     "https://admin.crewsh.com",
-    'https://gentle-thrush-enormously.ngrok-free.app'
+    'https://gentle-thrush-enormously.ngrok-free.app',
+    'http://10.10.29.66:5173',
+    'http://10.10.29.64:8000',
+    
+    
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-# CORS_ALLOW_ALL_ORIGINS = DEBUG
+CORS_ALLOW_ALL_ORIGINS = DEBUG
 CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+
 
 # Stripe
 STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY", "")
@@ -241,8 +250,20 @@ DOMAIN = os.environ.get("DOMAIN", "http://localhost:8000")
 
 APPEND_SLASH = True
 
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+# Secure cookies only in production
+# SESSION_COOKIE_SECURE = ON_PRODUCTION
+# CSRF_COOKIE_SECURE = ON_PRODUCTION
+# CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read CSRF token
 
 if ON_PRODUCTION:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}

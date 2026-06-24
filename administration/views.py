@@ -1,4 +1,4 @@
-from django.db.models import Sum
+from django.db.models import Count, Sum
 from django.contrib.auth import get_user_model
 
 from rest_framework import status
@@ -11,6 +11,8 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework_simplejwt.views import (
     TokenObtainPairView
 )
+
+from marketplace.models import Product
 from .utils import get_monthly_earnings
 
 from core.models import Company, Ship, Announcement, Settings
@@ -22,7 +24,7 @@ from user.models import Profile
 from user.serializers import ProfileSerializer
 
 from match.models import Match
-
+from django.shortcuts import get_object_or_404
 from subscription.models import PrivateMode, Subscription, Plan
 from subscription.serializers import (
     PrivateModeSerializer, SubscriptionSerializer, PlanSerializer
@@ -30,7 +32,10 @@ from subscription.serializers import (
 
 from .serializers import (
     AuthTokenSerializer,
-    AdminUserSerializer
+    AdminUserSerializer,
+    ServiceSerializer,
+    ServiceSerializer2,
+    User
 )
 
 
@@ -204,12 +209,132 @@ class Dashboard(APIView):
             "subscription_count": subscriptions.count(),
             "total_earning": sb_earn + prm_earn,
             "user_list": AdminUserSerializer(users.exclude(id=self.request.user.id), many=True).data,
+            # "gender_data": {
+            #     "male_percentage": (males.count() / profile_count) * 100,
+            #     "female_percentage": (females.count()/ profile_count) * 100
+            # },
             "gender_data": {
-                "male_percentage": (males.count() / profile_count) * 100,
-                "female_percentage": (females.count()/ profile_count) * 100
+                "male_percentage": round((males.count() / profile_count) * 100, 2) if profile_count else 0,
+                "female_percentage": round((females.count() / profile_count) * 100, 2) if profile_count else 0,
             },
             "last_six_month_earning": last_six_month_earning
         }
 
         return Response(data, status=status.HTTP_200_OK)
 
+
+
+
+# For listing all services in the marketplace
+from rest_framework.pagination import PageNumberPagination
+class ServicePagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+    
+class ListServices(APIView):
+    permission_classes = [permissions.IsAdminUser]
+    pagination_class = ServicePagination()
+
+    def get(self, request, *args, **kwargs):
+        services = Product.objects.all().order_by("-id")
+
+        paginator = self.pagination_class
+        page = paginator.paginate_queryset(services, request)
+
+        serializer = ServiceSerializer(
+            page,
+            many=True,
+            context={"request": request}
+        )
+        return paginator.get_paginated_response(serializer.data)
+    
+    
+
+class RetrieveDetailsService(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request, *args, **kwargs):
+        service_id = kwargs.get("pk")
+        try:
+            service = Product.objects.get(id=service_id)
+        except Product.DoesNotExist:
+            return Response({"message": "Service not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ServiceSerializer(
+            service,
+            context={"request": request}
+        )
+        
+        response = {
+            "status": "success",
+            "status_code": status.HTTP_200_OK,
+            "message": "Services retrieved successfully",
+            "data": serializer.data
+        }
+        return Response(response, status=status.HTTP_200_OK)
+    
+    
+    
+    
+
+    
+class ListServices(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request, *args, **kwargs):
+        users = User.objects.annotate(
+            service_count=Count('products')
+        ).filter(service_count__gt=0)
+
+        data = []
+
+        for user in users:
+            data.append({
+                "user_id": user.id,
+                "creator": user.full_name,
+                "email": user.email_address,
+                "joining_date": user.created_at.strftime("%d/%m/%Y") if user.created_at else None,
+                "service_created": user.service_count,
+            })
+
+        response = {
+            "status": "success",
+            "status_code": status.HTTP_200_OK,
+            "message": "Services fetched successfully",
+            "data": data
+        }
+
+        return Response(response, status=status.HTTP_200_OK)
+    
+    
+    
+class UserServicesView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+
+        services = Product.objects.filter(user=user).order_by("-id")
+
+        data = []
+        for service in services:
+            data.append({
+                "id": service.id,
+                "name": service.title,
+                "description": service.description,
+                "created_at": service.created_at.strftime("%d/%m/%Y"),
+            })
+
+        return Response({
+            "status": "success",
+            "status_code": 200,
+            "message": "User services fetched successfully",
+            "data": {
+                "user_id": user.id,
+                "creator": user.full_name,
+                "email": user.email_address,
+                "total_services": services.count(),
+                "services": data
+            }
+        }, status=status.HTTP_200_OK)

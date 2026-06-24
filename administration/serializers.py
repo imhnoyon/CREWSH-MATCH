@@ -59,3 +59,29 @@ class AdminUserSerializer(serializers.ModelSerializer):
         if profile:
             response['profile'] = {"gender": profile.gender, "company": profile.company.name, "ship": profile.ship.name}
         return response
+
+
+from marketplace.models import Product
+class ServiceSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+    class Meta:
+        model = Product
+        fields =['id', 'title', 'description','image','created_at', 'user']
+         
+    def get_user(self, obj):
+        return {
+            "id": obj.user.id,
+            "full_name": obj.user.full_name,
+            "email_address": obj.user.email_address,
+            "photo": obj.user.get_photo(),
+        }
+
+
+
+class ServiceSerializer2(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+    class Meta:
+        model = Product
+        fields =['id', 'title', 'description','image','created_at', 'user']
+    
+    

@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    RetrieveDetailsService,
     Signin,
     ListUser,
     RetrieveUpdateDeleteUser,
@@ -15,7 +16,9 @@ from .views import (
     CreateAnnounceMent,
     UpdateAccount,
     SiteSettings,
-    Dashboard
+    Dashboard,
+    ListServices,
+    UserServicesView,
 )
 
 
@@ -35,4 +38,9 @@ urlpatterns = [
     path("account/update/", UpdateAccount.as_view(), name='update-account'),
     path("site/settings/", SiteSettings.as_view(), name="site-settings"),
     path("dashboard/analytics/", Dashboard.as_view(), name='dashboard-analytics'),
+    # newly added
+    path("services/list/", ListServices.as_view(), name='list-services'),
+    path("services/retrieve/<int:pk>/", RetrieveDetailsService.as_view(), name='retrieve-detail-service'),
+    path("services/users/list/", ListServices.as_view(), name='list-services-users'),
+    path("services/users/list/<int:user_id>/", UserServicesView.as_view(), name='list-services-users-id'),
 ]
