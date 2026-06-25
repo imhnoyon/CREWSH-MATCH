@@ -323,6 +323,7 @@ class UserServicesView(APIView):
                 "id": service.id,
                 "name": service.title,
                 "description": service.description,
+                "image": request.build_absolute_uri(service.image.url) if service.image else None,
                 "created_at": service.created_at.strftime("%d/%m/%Y"),
             })
 

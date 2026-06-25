@@ -37,7 +37,15 @@ class ProductCreateAPIView(APIView):
         Product.delete_expired()
         products = Product.objects.filter(valid_until__gt=timezone.now())
         serializer = ProductSerializer(products, many=True, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+        {
+            "status_code": status.HTTP_200_OK,
+            "success": True,
+            "message": "Products retrieved successfully.",
+            "data": serializer.data,
+        },
+        status=status.HTTP_200_OK,
+      )
     
     
     
@@ -50,10 +58,46 @@ class ProductDetailAPIView(APIView):
         try:
             product = Product.objects.get(pk=pk)
         except Product.DoesNotExist:
-            return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {'error': 'Product not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-        serializer = ProductSerializer(product, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = ProductSerializer(
+            product,
+            context={'request': request}
+        )
+
+        data = serializer.data
+        data["is_my_service"] = product.user == request.user
+
+        return Response(data, status=status.HTTP_200_OK)
+    
+    def patch(self, request, pk):
+        Product.delete_expired()
+        try:
+            product = Product.objects.get(pk=pk)
+        except Product.DoesNotExist:
+            return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+        if product.user != request.user:
+            return Response({'error': 'You do not have permission to edit this product'}, status=status.HTTP_403_FORBIDDEN)
+        serializer = ProductSerializer(product, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, pk):
+        Product.delete_expired()
+        try:
+            product = Product.objects.get(pk=pk)
+        except Product.DoesNotExist:
+            return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+        if product.user != request.user:
+            return Response({'error': 'You do not have permission to delete this product'}, status=status.HTTP_403_FORBIDDEN)
+        product.delete()
+        return Response({'message': 'Product deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
 
 
 class ProductChatAPIView(APIView):
