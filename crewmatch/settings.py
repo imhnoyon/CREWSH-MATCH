@@ -18,7 +18,7 @@ DEBUG = os.environ.get("DEBUG") == 'True'
 ON_PRODUCTION = os.environ.get("ON_PRODUCTION") == "True"
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.getenv("ALLOWED_HOSTS", "10.10.29.64").split(",")
+    for host in os.getenv("ALLOWED_HOSTS", "10.10.26.64").split(",")
     if host.strip()
 ]
 

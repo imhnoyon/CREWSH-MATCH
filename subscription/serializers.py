@@ -54,6 +54,29 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 class CheckoutSerializer(serializers.Serializer):
     plan_id = serializers.IntegerField(required=True)
 
+    def resolve_stripe_price_id(self, price_value):
+        if price_value.startswith("price_"):
+            return price_value
+
+        if price_value.startswith("prod_"):
+            try:
+                prices = stripe.Price.list(product=price_value, active=True, limit=1)
+            except stripe.error.InvalidRequestError:
+                raise serializers.ValidationError({
+                    "message": "The stored Stripe product id is invalid. Please set a Stripe price id for this plan."
+                })
+
+            if not prices.data:
+                raise serializers.ValidationError({
+                    "message": "No active Stripe price was found for the stored Stripe product. Please update the plan with a Stripe price id."
+                })
+
+            return prices.data[0].id
+
+        raise serializers.ValidationError({
+            "message": "Invalid Stripe price identifier stored on the plan. It must be a Stripe price id starting with price_."
+        })
+
     def validate(self, attrs):
         request = self.context.get("request")
         user = request.user
@@ -66,25 +89,27 @@ class CheckoutSerializer(serializers.Serializer):
         if user.is_subscribed:
             raise serializers.ValidationError({"message": "User already subscribed for a plan"})
 
+        self.stripe_price_id = self.resolve_stripe_price_id(self.plan.price_id)
         return attrs
 
     def save(self, **kwargs):
         request = self.context.get("request")
-        price_id = self.plan.price_id
+        price_id = self.stripe_price_id
+
         try:
             stripe_session = stripe.checkout.Session.create(
                 customer_email=request.user.email_address,
-                line_items=[{'price': price_id, 'quantity': 1, }],
+                line_items=[{'price': price_id, 'quantity': 1}],
                 payment_method_types=['card'],
                 mode='subscription',
                 success_url=settings.STRIPE_SUCCESS_URL + f"?session_id={{CHECKOUT_SESSION_ID}}",
                 cancel_url=settings.STRIPE_CANCEL_URL,
                 subscription_data={
                     "metadata": {
-                    'user_id': str(request.user.id),
-                    "price_id": price_id,
-                    "plan_id": self.plan.id
-                }
+                        'user_id': str(request.user.id),
+                        "price_id": price_id,
+                        "plan_id": self.plan.id
+                    }
                 },
                 metadata={
                     'user_id': str(request.user.id),
@@ -93,9 +118,14 @@ class CheckoutSerializer(serializers.Serializer):
                 },
             )
             return {"url": stripe_session.url}
+        except stripe.error.InvalidRequestError as e:
+            raise serializers.ValidationError({"message": f"Stripe request failed: {str(e)}"})
         except Exception as e:
-            print(str(e))
-            raise serializers.ValidationError({"message": "Something went wrong "})
+            raise serializers.ValidationError({"message": "Something went wrong while creating the checkout session."})
+    
+    
+    
+    
 
 
 class PrivateModeSerializer(serializers.ModelSerializer):

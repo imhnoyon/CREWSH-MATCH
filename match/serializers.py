@@ -54,12 +54,22 @@ class RequestSerializer(serializers.ModelSerializer):
 
         return request_obj
 
+    def get_user_representation(self, user):
+        profile = user.get_profile()
+        age = profile.age if profile else None
+        return {
+            "id": user.id,
+            "full_name": user.full_name,
+            "photo": user.get_photo(),
+            "age": age,
+        }
+
     def to_representation(self, instance):
         context = super().to_representation(instance)
         sender = instance.sender
         receiver = instance.receiver
-        context['sender'] = {"id": sender.id, "full_name": sender.full_name, "photo": sender.get_photo(), "age": sender.profile.age}
-        context['receiver'] = {"id": receiver.id, "full_name": receiver.full_name, "photo": receiver.get_photo(), "age": receiver.profile.age}
+        context['sender'] = self.get_user_representation(sender)
+        context['receiver'] = self.get_user_representation(receiver)
         context['is_a_match'] = instance.accepted
 
         if self.match:
@@ -82,14 +92,23 @@ class MatchSerializer(serializers.ModelSerializer):
             "updated_at",
         )
 
+    def get_user_representation(self, user):
+        profile = user.get_profile()
+        age = profile.age if profile else None
+        return {
+            "id": user.id,
+            "full_name": user.full_name,
+            "photo": user.get_photo(),
+            "age": age,
+        }
+
     def to_representation(self, instance):
         context = super().to_representation(instance)
         sender = instance.sender
         receiver = instance.receiver
-        print("match", instance, instance.id)
         inbox = instance.inbox
-        context['sender'] = {"id": sender.id, "full_name": sender.full_name, "photo": sender.get_photo(), "age": sender.profile.age}
-        context['receiver'] = {"id": receiver.id, "full_name": receiver.full_name, "photo": receiver.get_photo(), "age": receiver.profile.age}
+        context['sender'] = self.get_user_representation(sender)
+        context['receiver'] = self.get_user_representation(receiver)
         context['inbox_id'] = inbox.inbox_id
         return context
 

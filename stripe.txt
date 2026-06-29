@@ -1,0 +1,1 @@
+stripe listen --forward-to http://10.10.29.64:8000/api/subscription/webhook/
