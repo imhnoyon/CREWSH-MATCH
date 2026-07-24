@@ -10,7 +10,6 @@ class Request(Timestamp):
     receiver = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='received_requests', on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     canceled = models.BooleanField(default=False)
-
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['sender', 'receiver'], name='unique_request_pair')
