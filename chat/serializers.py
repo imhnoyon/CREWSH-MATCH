@@ -49,9 +49,7 @@ class InboxSerializer(serializers.ModelSerializer):
                 "seen": last_message.seen,
                 "timestamp": last_message.timestamp
             }
-
         return response
-
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
