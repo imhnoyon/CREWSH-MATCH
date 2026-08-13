@@ -1,8 +1,16 @@
 from django.conf import settings
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import path, include
 from django.conf.urls.static import static
 
+
+def root_view(request):
+    return JsonResponse({
+        "message": "CREWMATCH API Server Running",
+        "status": "ok"
+    })
+    
 api_urlpatterns = [
     path("auth/", include("authentication.urls")),
     path("user/", include("user.urls")),
@@ -16,6 +24,7 @@ api_urlpatterns = [
 ]
 
 urlpatterns = [
+    path("", root_view),
     path('admin/', admin.site.urls),
     path("api/", include(api_urlpatterns))
 ]
