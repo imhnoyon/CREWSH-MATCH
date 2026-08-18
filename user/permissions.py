@@ -19,6 +19,9 @@ class ProfileRequired(BasePermission):
         if not request.user.is_authenticated:
             return False
 
+        if request.user.is_superuser:
+            return True
+
         profile = Profile.objects.filter(user=request.user)
 
-        return bool(request.user.is_authenticated and profile.exists())
+        return bool(profile.exists())

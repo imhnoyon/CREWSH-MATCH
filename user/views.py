@@ -28,11 +28,11 @@ class UpdateUser(generics.UpdateAPIView):
 
 
 class RetrieveProfile(generics.GenericAPIView):
-    permission_classes = [permissions.IsAuthenticated, ProfileRequired]
+    permission_classes = [permissions.IsAuthenticated, ]
     serializer_class = UserSerializer
 
     def get(self, *args, **kwargs):
-        serializer = UserSerializer(self.request.user)
+        serializer = self.get_serializer(self.request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

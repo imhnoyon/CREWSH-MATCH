@@ -22,7 +22,7 @@ from core.serializers import (
 
 from user.models import Profile
 from user.serializers import ProfileSerializer
-
+from rest_framework.pagination import PageNumberPagination
 from match.models import Match
 from django.shortcuts import get_object_or_404
 from subscription.models import PrivateMode, Subscription, Plan
@@ -39,16 +39,46 @@ from .serializers import (
 )
 
 
+class AdminUserPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 1000
+
+    def get_paginated_response(self, data):
+        return Response({
+            "status": "success",
+            "message": "Users retrieved successfully",
+            "status_code": status.HTTP_200_OK,
+            "count": self.page.paginator.count,
+            "next": self.get_next_link(),
+            "previous": self.get_previous_link(),
+            "data": data
+        })
+
 class Signin(TokenObtainPairView):
     serializer_class = AuthTokenSerializer
 
 
+# class ListUser(generics.ListAPIView):
+#     permission_classes = [permissions.IsAdminUser, ]
+#     serializer_class = AdminUserSerializer
+
+#     def get_queryset(self):
+#         return get_user_model().objects.order_by("-id").exclude(id=self.request.user.id)
+
+
 class ListUser(generics.ListAPIView):
-    permission_classes = [permissions.IsAdminUser, ]
+    permission_classes = [permissions.IsAdminUser]
     serializer_class = AdminUserSerializer
+    pagination_class = AdminUserPagination
 
     def get_queryset(self):
-        return get_user_model().objects.order_by("-id").exclude(id=self.request.user.id)
+        return (
+            get_user_model()
+            .objects
+            .order_by("-id")
+            .exclude(id=self.request.user.id)
+        )
 
 
 class RetrieveUpdateDeleteUser(generics.RetrieveUpdateDestroyAPIView):
@@ -87,12 +117,14 @@ class RetrieveUpdateDeleteUser(generics.RetrieveUpdateDestroyAPIView):
 class ListPrivateMode(generics.ListAPIView):
     permission_classes = [permissions.IsAdminUser, ]
     serializer_class = PrivateModeSerializer
+    pagination_class = AdminUserPagination
     queryset = PrivateMode.objects.order_by("-id")
 
 
 class ListCreatePlan(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAdminUser, ]
     serializer_class = PlanSerializer
+    pagination_class = AdminUserPagination
     queryset = Plan.objects.all()
 
 
@@ -105,12 +137,14 @@ class DeletePlan(generics.DestroyAPIView):
 class ListSubscription(generics.ListAPIView):
     permission_classes = [permissions.IsAdminUser, ]
     serializer_class = SubscriptionSerializer
+    pagination_class = AdminUserPagination
     queryset = Subscription.objects.order_by("-id")
 
 
 class ListCreateCompany(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAdminUser, ]
     serializer_class = CompanySerializer
+    pagination_class = AdminUserPagination
     queryset = Company.objects.all()
 
     def list(self, request, *args, **kwargs):
@@ -136,7 +170,17 @@ class RetrieveDeleteCompany(generics.RetrieveUpdateDestroyAPIView):
 class ListCreateShip(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAdminUser, ]
     serializer_class = ShipSerializer
+    pagination_class = AdminUserPagination
     queryset = Ship.objects.all()
+    
+    
+class ListCreateShipview(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAdminUser, ]
+    serializer_class = ShipSerializer
+    # pagination_class = AdminUserPagination
+    queryset = Ship.objects.all()
+    
+    
 
 
 class RetrieveUpdateDeleteShip(generics.RetrieveUpdateDestroyAPIView):

@@ -10,6 +10,9 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 class PlanSerializer(serializers.ModelSerializer):
+    price_id = serializers.CharField(required=False, allow_blank=True)
+    is_subscribe = serializers.SerializerMethodField(method_name="get_is_subscribe", read_only=True)
+
     class Meta:
         model = Plan
         fields = (
@@ -20,12 +23,64 @@ class PlanSerializer(serializers.ModelSerializer):
             "amount",
             "duration",
             "description",
+            "is_subscribe",
         )
+
+    def get_is_subscribe(self, obj):
+        request = self.context.get("request")
+        if request and request.user.is_authenticated and not request.user.is_superuser:
+            return obj.subscriptions.filter(user=request.user, active=True).exists()
+        return obj.subscriptions.filter(active=True).exists() or obj.subscriptions.exists()
+
+    def create(self, validated_data):
+        price_id = validated_data.get("price_id")
+        if not price_id or not str(price_id).startswith("price_"):
+            if getattr(settings, 'STRIPE_SECRET_KEY', None):
+                try:
+                    stripe.api_key = settings.STRIPE_SECRET_KEY
+                    ship = validated_data.get('ship')
+                    name = validated_data.get('name')
+                    amount = validated_data.get('amount')
+                    duration = validated_data.get('duration')
+                    description = validated_data.get('description', '')
+
+                    interval_map = {
+                        "WEEKLY": "week",
+                        "MONTHLY": "month",
+                        "YEARLY": "year"
+                    }
+                    interval = interval_map.get(str(duration).upper(), "month")
+                    unit_amount = int(float(amount) * 100)
+
+                    ship_name = ship.name if ship else "General"
+                    product = stripe.Product.create(
+                        name=f"{name} ({ship_name})",
+                        description=description or f"{name} plan"
+                    )
+                    price = stripe.Price.create(
+                        product=product.id,
+                        unit_amount=unit_amount,
+                        currency="usd",
+                        recurring={"interval": interval},
+                    )
+                    validated_data['price_id'] = price.id
+                except Exception as e:
+                    print("Error creating Stripe product/price automatically:", e)
+                    raise serializers.ValidationError({
+                        "message": f"Stripe error while creating price automatically: {str(e)}"
+                    })
+            else:
+                raise serializers.ValidationError({
+                    "message": "STRIPE_SECRET_KEY is not configured in settings."
+                })
+
+        return super().create(validated_data)
 
     def to_representation(self, instance):
         response = super().to_representation(instance)
         ship = instance.ship
-        response['ship'] = {"id": ship.id, "name": ship.name}
+        if ship:
+            response['ship'] = {"id": ship.id, "name": ship.name}
         return response
 
 
